@@ -1,0 +1,345 @@
+// 导入变量文件
+@import './variables.less';
+
+// 清除浮动
+.clearfix() {
+  &::after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+// 文本省略号
+.text-ellipsis() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 多行文本省略号
+.text-ellipsis-multiline(@lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: @lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// 居中对齐
+.center-flex() {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// 垂直居中
+.center-vertical() {
+  display: flex;
+  align-items: center;
+}
+
+// 水平居中
+.center-horizontal() {
+  display: flex;
+  justify-content: center;
+}
+
+// 绝对定位居中
+.absolute-center() {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+// 卡片样式
+.card-style(@padding: @spacing-xxl, @radius: @border-radius-lg, @shadow: @box-shadow-sm) {
+  background: @bg-color-white;
+  padding: @padding;
+  border-radius: @radius;
+  box-shadow: @shadow;
+}
+
+// 按钮基础样式
+.button-base(@bg-color: @primary-color, @text-color: @bg-color-white, @radius: @border-radius-sm) {
+  background: @bg-color;
+  color: @text-color;
+  border: none;
+  border-radius: @radius;
+  padding: @spacing-sm @spacing-lg;
+  cursor: pointer;
+  transition: @transition-base;
+  font-size: @font-size-sm;
+  
+  &:hover {
+    opacity: @opacity-hover;
+  }
+  
+  &:active {
+    opacity: @opacity-active;
+  }
+  
+  &:disabled {
+    opacity: @opacity-disabled;
+    cursor: not-allowed;
+  }
+}
+
+// 主要按钮
+.button-primary() {
+  .button-base(@primary-color, @bg-color-white);
+  
+  &:hover {
+    background: @primary-hover-color;
+  }
+}
+
+// 成功按钮
+.button-success() {
+  .button-base(@success-color, @bg-color-white);
+}
+
+// 警告按钮
+.button-warning() {
+  .button-base(@warning-color, @bg-color-white);
+}
+
+// 错误按钮
+.button-error() {
+  .button-base(@error-color, @bg-color-white);
+}
+
+// 输入框样式
+.input-style(@padding: @spacing-sm @spacing-md, @radius: @border-radius-sm) {
+  padding: @padding;
+  border: 1px solid #d9d9d9;
+  border-radius: @radius;
+  font-size: @font-size-sm;
+  transition: @transition-base;
+  
+  &:focus {
+    border-color: @primary-color;
+    outline: none;
+    box-shadow: 0 0 0 2px fade(@primary-color, 20%);
+  }
+  
+  &:disabled {
+    background: @bg-color-light;
+    color: @text-color-disabled;
+    cursor: not-allowed;
+  }
+}
+
+// 状态标签样式
+.status-tag(@bg-color: @bg-color-primary, @text-color: @primary-color, @radius: @border-radius-sm) {
+  background: @bg-color;
+  color: @text-color;
+  padding: @spacing-xs @spacing-sm;
+  border-radius: @radius;
+  font-size: @font-size-xs;
+  display: inline-block;
+}
+
+// 头像样式
+.avatar-style(@size: 32px, @radius: @border-radius-circle) {
+  width: @size;
+  height: @size;
+  border-radius: @radius;
+  object-fit: cover;
+  display: inline-block;
+}
+
+// 加载动画
+.loading-spin() {
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  animation: spin 1s linear infinite;
+}
+
+// 淡入动画
+.fade-in(@duration: 0.3s) {
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  animation: fadeIn @duration ease-in-out;
+}
+
+// 滑入动画
+.slide-in-up(@duration: 0.3s, @distance: 20px) {
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(@distance);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  animation: slideInUp @duration ease-out;
+}
+
+// 响应式断点
+.respond-to(@breakpoint) when (@breakpoint = xs) {
+  @media (max-width: @screen-xs) {
+    @content();
+  }
+}
+
+.respond-to(@breakpoint) when (@breakpoint = sm) {
+  @media (min-width: @screen-sm) {
+    @content();
+  }
+}
+
+.respond-to(@breakpoint) when (@breakpoint = md) {
+  @media (min-width: @screen-md) {
+    @content();
+  }
+}
+
+.respond-to(@breakpoint) when (@breakpoint = lg) {
+  @media (min-width: @screen-lg) {
+    @content();
+  }
+}
+
+.respond-to(@breakpoint) when (@breakpoint = xl) {
+  @media (min-width: @screen-xl) {
+    @content();
+  }
+}
+
+// 网格布局
+.grid-container(@columns: 12, @gap: @spacing-lg) {
+  display: grid;
+  grid-template-columns: repeat(@columns, 1fr);
+  gap: @gap;
+}
+
+// Flex布局工具
+.flex-between() {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-around() {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.flex-column() {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-wrap() {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+// 滚动条样式
+.custom-scrollbar(@width: 8px, @track-color: @bg-color-light, @thumb-color: @text-color-muted) {
+  &::-webkit-scrollbar {
+    width: @width;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: @track-color;
+    border-radius: @border-radius-sm;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: @thumb-color;
+    border-radius: @border-radius-sm;
+    
+    &:hover {
+      background: @text-color-secondary;
+    }
+  }
+}
+
+// 表格样式
+.table-style() {
+  width: 100%;
+  border-collapse: collapse;
+  
+  th, td {
+    padding: @spacing-md;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  th {
+    background: @bg-color-light;
+    font-weight: @font-weight-medium;
+    color: @text-color-primary;
+  }
+  
+  tr:hover {
+    background: @bg-color-light;
+  }
+}
+
+// 模态框遮罩
+.modal-overlay(@bg-color: rgba(0, 0, 0, 0.5), @z-index: @z-index-modal) {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: @bg-color;
+  z-index: @z-index;
+  .center-flex();
+}
+
+// 工具提示
+.tooltip(@bg-color: rgba(0, 0, 0, 0.8), @text-color: @bg-color-white, @arrow-size: 4px) {
+  position: relative;
+  
+  &::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: @bg-color;
+    color: @text-color;
+    padding: @spacing-xs @spacing-sm;
+    border-radius: @border-radius-sm;
+    font-size: @font-size-xs;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: @transition-base;
+    z-index: @z-index-tooltip;
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: @arrow-size solid transparent;
+    border-top-color: @bg-color;
+    opacity: 0;
+    visibility: hidden;
+    transition: @transition-base;
+  }
+  
+  &:hover::after,
+  &:hover::before {
+    opacity: 1;
+    visibility: visible;
+  }
+}
