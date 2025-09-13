@@ -24,6 +24,7 @@ import type {
   OverviewResponse,
   TableDataResponse,
   ChartDataResponse,
+  PaginationParams,
 } from '@/views/analytics/types'
 
 /**
@@ -472,9 +473,9 @@ export const mockGetChartData = (): Promise<ChartDataResponse> => {
 
 export const mockGetTableData = <T>(
   type: 'products' | 'users' | 'orders',
-  page: number = 1,
-  pageSize: number = 10,
+  pagination: PaginationParams,
 ): Promise<TableDataResponse<T>> => {
+  const { current: page, pageSize } = pagination
   return new Promise((resolve) => {
     setTimeout(() => {
       let allData: any[]

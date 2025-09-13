@@ -422,18 +422,18 @@ import HighChart from '@/components/common/HighChart.vue'
 import AdvancedCharts from '@/components/charts/AdvancedCharts.vue'
 import {
   getOverviewData,
-  getChartData,
   getSalesTrendData,
   getUserGrowthData,
   getCategoryDistributionData,
   getRegionDistributionData,
   getPaymentDistributionData,
-  getBatchChartData,
   getHeatmapData,
   getBarChartData,
   getAreaChartData,
-  getTableData,
   getRealtimeData,
+  getProductData,
+  getUserData,
+  getOrderData,
 } from '@/api/analytics'
 import { dataAnalysisChartConfigs as chartConfigs } from '@/config/charts/chartConfigs'
 import type { Options } from 'highcharts'
@@ -1001,14 +1001,14 @@ const loadChartsData = async (): Promise<void> => {
   try {
     // 加载各种图表数据
     const [
-      salesData,
-      userData,
-      categoryData,
-      regionData,
-      paymentData,
-      barData,
-      areaData,
-      heatData,
+      salesResponse,
+      userResponse,
+      categoryResponse,
+      regionResponse,
+      paymentResponse,
+      barResponse,
+      areaResponse,
+      heatResponse,
     ] = await Promise.all([
       getSalesTrendData(),
       getUserGrowthData(),
@@ -1020,14 +1020,15 @@ const loadChartsData = async (): Promise<void> => {
       getHeatmapData(),
     ])
 
-    salesTrendData.value = salesData
-    userGrowthData.value = userData
-    categoryDistributionData.value = categoryData
-    regionDistributionData.value = regionData
-    paymentDistributionData.value = paymentData
-    barChartData.value = barData
-    areaChartData.value = areaData
-    heatmapData.value = heatData
+    // 从API响应中提取实际数据
+    salesTrendData.value = salesResponse.data
+    userGrowthData.value = userResponse.data
+    categoryDistributionData.value = categoryResponse.data
+    regionDistributionData.value = regionResponse.data
+    paymentDistributionData.value = paymentResponse.data
+    barChartData.value = barResponse.data
+    areaChartData.value = areaResponse.data
+    heatmapData.value = heatResponse.data
   } catch (error) {
     message.error('加载图表数据失败')
     console.error('图表数据加载错误:', error)
@@ -1039,8 +1040,8 @@ const loadChartsData = async (): Promise<void> => {
  */
 const refreshHeatmap = async (): Promise<void> => {
   try {
-    const heatData = await getHeatmapData()
-    heatmapData.value = heatData
+    const response = await getHeatmapData()
+    heatmapData.value = response.data
     message.success('热力图数据已刷新')
   } catch (error) {
     message.error('刷新热力图数据失败')
@@ -1052,7 +1053,8 @@ const refreshHeatmap = async (): Promise<void> => {
  */
 const loadOverviewData = async (): Promise<void> => {
   try {
-    overview.value = await getOverviewData()
+    const response = await getOverviewData()
+    overview.value = response.data
   } catch (error) {
     message.error('加载概览数据失败')
     console.error('概览数据加载错误:', error)
@@ -1065,7 +1067,8 @@ const loadOverviewData = async (): Promise<void> => {
 const loadRealtimeData = async (): Promise<void> => {
   try {
     // 实时数据现在从getOverviewData中获取，这里只更新时间戳
-    realtimeData.value = await getRealtimeData()
+    const response = await getRealtimeData()
+    realtimeData.value = response.data
     lastUpdateTime.value = dayjs().format('HH:mm:ss')
   } catch (error) {
     console.error('加载实时数据失败:', error)
@@ -1079,22 +1082,33 @@ const loadTableData = async (): Promise<void> => {
   tableLoading.value = true
   try {
     const dateRageFormat = dateRange.value.map((item) => dayjs(item).format('YYYY-MM-DD'))
-    const response = await getTableData(tableDataType.value, {
-      page: tablePagination.current,
-      pageSize: tablePagination.pageSize,
-      dateRange: {
-        startDate: dateRageFormat[0],
-        endDate: dateRageFormat[1],
-      },
-    })
+    const dateRangeParams = {
+      startDate: dateRageFormat[0],
+      endDate: dateRageFormat[1],
+    }
+
+    let response: any
+
+    // 根据表格类型调用对应的API接口
+    if (tableDataType.value === 'products') {
+      response = await getProductData(tablePagination, dateRangeParams)
+    } else if (tableDataType.value === 'users') {
+      response = await getUserData(tablePagination, dateRangeParams)
+    } else if (tableDataType.value === 'orders') {
+      response = await getOrderData(tablePagination, dateRangeParams)
+    } else {
+      throw new Error(`Unsupported table data type: ${tableDataType.value}`)
+    }
 
     // 验证响应数据结构
-    if (!response || !Array.isArray(response.list)) {
+    if (!response?.data || !Array.isArray(response.data.list)) {
       throw new Error('Invalid table data response')
     }
 
-    // 根据类型安全地赋值数
-    const cleanedData = response.list
+    // 根据类型安全地赋值数据
+    const tableDataResponse = response.data
+    const cleanedData = tableDataResponse.list
+
     if (tableDataType.value === 'products') {
       tableData.products = cleanedData as ProductDataItem[]
     } else if (tableDataType.value === 'users') {
@@ -1104,9 +1118,9 @@ const loadTableData = async (): Promise<void> => {
     }
 
     // 更新分页信息
-    tablePagination.total = response.total || 0
-    tablePagination.current = response.current || tablePagination.current
-    tablePagination.pageSize = response.pageSize || tablePagination.pageSize
+    tablePagination.total = tableDataResponse.total || 0
+    tablePagination.current = tableDataResponse.current || tablePagination.current
+    tablePagination.pageSize = tableDataResponse.pageSize || tablePagination.pageSize
   } catch (error) {
     message.error('加载表格数据失败')
     console.error('表格数据加载错误:', error)

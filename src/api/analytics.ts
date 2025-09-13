@@ -1,9 +1,8 @@
 /**
  * 数据分析相关API接口
  */
-import request from '@/utils/request'
+import { apiGet, type ApiResponse } from './index'
 import type {
-  OverviewResponse,
   ChartDataResponse,
   TableDataResponse,
   ProductDataItem,
@@ -14,318 +13,326 @@ import type {
 } from '@/views/analytics/types'
 import { mockGetOverviewData, mockGetChartData, mockGetTableData } from '@/mock/analytics'
 
-// 是否使用mock数据
-const USE_MOCK = true
-
 /**
  * 获取数据概览
+ * @param dateRange 日期范围
+ * @returns 概览数据
  */
-export const getOverviewData = async (dateRange?: DateRange): Promise<any> => {
-  if (USE_MOCK) {
+export const getOverviewData = async (dateRange?: DateRange): Promise<ApiResponse<any>> => {
+  return apiGet('/analytics/overview', { dateRange }, async () => {
     const mockData = await mockGetOverviewData()
-    return mockData.overview
-  }
-
-  return request({
-    url: '/api/analytics/overview',
-    method: 'GET',
-    params: dateRange,
+    return {
+      code: 200,
+      message: 'success',
+      data: mockData.overview,
+      timestamp: Date.now(),
+    }
   })
 }
 
 /**
  * 获取图表数据
+ * @param dateRange 日期范围
+ * @returns 图表数据
  */
-export const getChartData = async (dateRange?: DateRange): Promise<ChartDataResponse> => {
-  if (USE_MOCK) {
-    return mockGetChartData()
-  }
-
-  return request({
-    url: '/api/analytics/charts',
-    method: 'GET',
-    params: dateRange,
+export const getChartData = async (
+  dateRange?: DateRange,
+): Promise<ApiResponse<ChartDataResponse>> => {
+  return apiGet('/analytics/charts', { dateRange }, async () => {
+    const mockData = await mockGetChartData()
+    return {
+      code: 200,
+      message: 'success',
+      data: mockData,
+      timestamp: Date.now(),
+    }
   })
 }
 
 /**
- * 获取商品数据
+ * 获取产品数据
+ * @param pagination 分页参数
+ * @param dateRange 日期范围
+ * @returns 产品数据
  */
 export const getProductData = async (
   pagination: PaginationParams,
   dateRange?: DateRange,
-): Promise<TableDataResponse<ProductDataItem>> => {
-  if (USE_MOCK) {
-    return mockGetTableData<ProductDataItem>('products', pagination.current, pagination.pageSize)
-  }
-
-  return request({
-    url: '/api/analytics/products',
-    method: 'GET',
-    params: {
-      ...pagination,
-      ...dateRange,
-    },
+): Promise<ApiResponse<TableDataResponse<ProductDataItem>>> => {
+  return apiGet('/analytics/products', { ...pagination, dateRange }, async () => {
+    const mockData = await mockGetTableData('products', pagination)
+    return {
+      code: 200,
+      message: 'success',
+      data: mockData,
+      timestamp: Date.now(),
+    }
   })
 }
 
 /**
  * 获取用户数据
+ * @param pagination 分页参数
+ * @param dateRange 日期范围
+ * @returns 用户数据
  */
 export const getUserData = async (
   pagination: PaginationParams,
   dateRange?: DateRange,
-): Promise<TableDataResponse<UserDataItem>> => {
-  if (USE_MOCK) {
-    return mockGetTableData<UserDataItem>('users', pagination.current, pagination.pageSize)
-  }
-
-  return request({
-    url: '/api/analytics/users',
-    method: 'GET',
-    params: {
-      ...pagination,
-      ...dateRange,
-    },
+): Promise<ApiResponse<TableDataResponse<UserDataItem>>> => {
+  return apiGet('/analytics/users', { ...pagination, dateRange }, async () => {
+    const mockData = await mockGetTableData('users', pagination)
+    return {
+      code: 200,
+      message: 'success',
+      data: mockData,
+      timestamp: Date.now(),
+    }
   })
 }
 
 /**
  * 获取订单数据
+ * @param pagination 分页参数
+ * @param dateRange 日期范围
+ * @returns 订单数据
  */
 export const getOrderData = async (
   pagination: PaginationParams,
   dateRange?: DateRange,
-): Promise<TableDataResponse<OrderDataItem>> => {
-  if (USE_MOCK) {
-    return mockGetTableData<OrderDataItem>('orders', pagination.current, pagination.pageSize)
-  }
-
-  return request({
-    url: '/api/analytics/orders',
-    method: 'GET',
-    params: {
-      ...pagination,
-      ...dateRange,
-    },
+): Promise<ApiResponse<TableDataResponse<OrderDataItem>>> => {
+  return apiGet('/analytics/orders', { ...pagination, dateRange }, async () => {
+    const mockData = await mockGetTableData('orders', pagination)
+    return {
+      code: 200,
+      message: 'success',
+      data: mockData,
+      timestamp: Date.now(),
+    }
   })
 }
 
 /**
  * 获取销售趋势数据
+ * @param dateRange 日期范围
+ * @returns 销售趋势数据
  */
-export const getSalesTrendData = async (dateRange?: DateRange) => {
-  if (USE_MOCK) {
+export const getSalesTrendData = async (dateRange?: DateRange): Promise<ApiResponse<any>> => {
+  return apiGet('/analytics/sales-trend', { dateRange }, async () => {
     const chartData = await mockGetChartData()
-    return chartData.salesTrend
-  }
-
-  return request({
-    url: '/api/analytics/sales-trend',
-    method: 'GET',
-    params: dateRange,
+    return {
+      code: 200,
+      message: 'success',
+      data: chartData.salesTrend,
+      timestamp: Date.now(),
+    }
   })
 }
 
 /**
  * 获取用户增长数据
+ * @param dateRange 日期范围
+ * @returns 用户增长数据
  */
-export const getUserGrowthData = async (dateRange?: DateRange) => {
-  if (USE_MOCK) {
+export const getUserGrowthData = async (dateRange?: DateRange): Promise<ApiResponse<any>> => {
+  return apiGet('/analytics/user-growth', { dateRange }, async () => {
     const chartData = await mockGetChartData()
-    return chartData.userGrowth
-  }
-
-  return request({
-    url: '/api/analytics/user-growth',
-    method: 'GET',
-    params: dateRange,
+    return {
+      code: 200,
+      message: 'success',
+      data: chartData.userGrowth,
+      timestamp: Date.now(),
+    }
   })
 }
 
 /**
  * 获取分类分布数据
+ * @param dateRange 日期范围
+ * @returns 分类分布数据
  */
-export const getCategoryDistributionData = async (dateRange?: DateRange) => {
-  if (USE_MOCK) {
+export const getCategoryDistributionData = async (
+  dateRange?: DateRange,
+): Promise<ApiResponse<any>> => {
+  return apiGet('/analytics/category-distribution', { dateRange }, async () => {
     const chartData = await mockGetChartData()
-    return chartData.categoryDistribution
-  }
-
-  return request({
-    url: '/api/analytics/category-distribution',
-    method: 'GET',
-    params: dateRange,
+    return {
+      code: 200,
+      message: 'success',
+      data: chartData.categoryDistribution,
+      timestamp: Date.now(),
+    }
   })
 }
 
 /**
  * 获取地区分布数据
+ * @param dateRange 日期范围
+ * @returns 地区分布数据
  */
-export const getRegionDistributionData = async (dateRange?: DateRange) => {
-  if (USE_MOCK) {
+export const getRegionDistributionData = async (
+  dateRange?: DateRange,
+): Promise<ApiResponse<any>> => {
+  return apiGet('/analytics/region-distribution', { dateRange }, async () => {
     const chartData = await mockGetChartData()
-    return chartData.regionDistribution
-  }
-
-  return request({
-    url: '/api/analytics/region-distribution',
-    method: 'GET',
-    params: dateRange,
+    return {
+      code: 200,
+      message: 'success',
+      data: chartData.regionDistribution,
+      timestamp: Date.now(),
+    }
   })
 }
 
 /**
  * 获取支付方式分布数据
+ * @param dateRange 日期范围
+ * @returns 支付方式分布数据
  */
-export const getPaymentDistributionData = async (dateRange?: DateRange) => {
-  if (USE_MOCK) {
+export const getPaymentDistributionData = async (
+  dateRange?: DateRange,
+): Promise<ApiResponse<any>> => {
+  return apiGet('/analytics/payment-distribution', { dateRange }, async () => {
     const chartData = await mockGetChartData()
-    return chartData.paymentDistribution
-  }
-
-  return request({
-    url: '/api/analytics/payment-distribution',
-    method: 'GET',
-    params: dateRange,
+    return {
+      code: 200,
+      message: 'success',
+      data: chartData.paymentDistribution,
+      timestamp: Date.now(),
+    }
   })
 }
 
 /**
  * 获取柱状图数据
+ * @param period 时间周期
+ * @param dateRange 日期范围
+ * @returns 柱状图数据
  */
 export const getBarChartData = async (
   period: 'month' | 'quarter' = 'month',
   dateRange?: DateRange,
-) => {
-  if (USE_MOCK) {
+): Promise<ApiResponse<any>> => {
+  return apiGet('/analytics/bar-chart', { period, dateRange }, async () => {
     const chartData = await mockGetChartData()
-    return chartData.barChart
-  }
-
-  return request({
-    url: '/api/analytics/bar-chart',
-    method: 'GET',
-    params: {
-      period,
-      ...dateRange,
-    },
+    return {
+      code: 200,
+      message: 'success',
+      data: chartData.barChart,
+      timestamp: Date.now(),
+    }
   })
 }
 
 /**
  * 获取面积图数据
+ * @param dateRange 日期范围
+ * @returns 面积图数据
  */
-export const getAreaChartData = async (dateRange?: DateRange) => {
-  if (USE_MOCK) {
+export const getAreaChartData = async (dateRange?: DateRange): Promise<ApiResponse<any>> => {
+  return apiGet('/analytics/area-chart', { dateRange }, async () => {
     const chartData = await mockGetChartData()
-    return chartData.areaChart
-  }
-
-  return request({
-    url: '/api/analytics/area-chart',
-    method: 'GET',
-    params: dateRange,
+    return {
+      code: 200,
+      message: 'success',
+      data: chartData.areaChart,
+      timestamp: Date.now(),
+    }
   })
 }
 
 /**
  * 获取热力图数据
+ * @param metric 指标类型
+ * @param dateRange 日期范围
+ * @returns 热力图数据
  */
 export const getHeatmapData = async (
   metric: 'activity' | 'orders' | 'revenue' = 'activity',
   dateRange?: DateRange,
-) => {
-  if (USE_MOCK) {
+): Promise<ApiResponse<any>> => {
+  return apiGet('/analytics/heatmap', { metric, dateRange }, async () => {
     const chartData = await mockGetChartData()
-    return chartData.heatmap
-  }
-
-  return request({
-    url: '/api/analytics/heatmap',
-    method: 'GET',
-    params: {
-      metric,
-      ...dateRange,
-    },
+    return {
+      code: 200,
+      message: 'success',
+      data: chartData.heatmap,
+      timestamp: Date.now(),
+    }
   })
 }
 
 /**
  * 获取批量图表数据
+ * @param dateRange 日期范围
+ * @returns 批量图表数据
  */
-export const getBatchChartData = async (dateRange?: DateRange): Promise<ChartDataResponse> => {
-  if (USE_MOCK) {
-    return mockGetChartData()
-  }
-
-  return request({
-    url: '/api/analytics/batch-charts',
-    method: 'GET',
-    params: dateRange,
+export const getBatchChartData = async (
+  dateRange?: DateRange,
+): Promise<ApiResponse<ChartDataResponse>> => {
+  return apiGet('/analytics/batch-charts', { dateRange }, async () => {
+    const mockData = await mockGetChartData()
+    return {
+      code: 200,
+      message: 'success',
+      data: mockData,
+      timestamp: Date.now(),
+    }
   })
 }
 
 /**
  * 导出报告
+ * @param dateRange 日期范围
+ * @returns 导出文件
  */
-export const exportReport = async (dateRange?: DateRange) => {
-  return request({
-    url: '/api/analytics/export',
-    method: 'POST',
-    data: dateRange,
-    responseType: 'blob',
-  })
-}
-
-/**
- * 获取表格数据（通用函数）
- */
-export const getTableData = async (
-  type: 'products' | 'users' | 'orders',
-  params: {
-    page: number
-    pageSize: number
-    dateRange?: DateRange
-  },
-): Promise<TableDataResponse<ProductDataItem | UserDataItem | OrderDataItem>> => {
-  if (USE_MOCK) {
-    return mockGetTableData(type, params.page, params.pageSize)
-  }
-
-  return request({
-    url: `/api/analytics/table/${type}`,
-    method: 'GET',
-    params,
+export const exportReport = async (dateRange?: DateRange): Promise<ApiResponse<Blob>> => {
+  return apiGet('/analytics/export', { dateRange }, async () => {
+    // Mock 导出功能
+    const blob = new Blob(['Mock export data'], { type: 'application/octet-stream' })
+    return {
+      code: 200,
+      message: 'success',
+      data: blob,
+      timestamp: Date.now(),
+    }
   })
 }
 
 /**
  * 获取实时数据
+ * @returns 实时数据
  */
-export const getRealtimeData = async (): Promise<any> => {
-  if (USE_MOCK) {
+export const getRealtimeData = async (): Promise<ApiResponse<any>> => {
+  return apiGet('/analytics/realtime', {}, async () => {
     const mockData = await mockGetOverviewData()
-    return mockData.realtime
-  }
-
-  return request({
-    url: '/api/analytics/realtime',
-    method: 'GET',
+    return {
+      code: 200,
+      message: 'success',
+      data: mockData.realtime,
+      timestamp: Date.now(),
+    }
   })
 }
 
 /**
  * 导出表格数据
+ * @param type 数据类型
+ * @param dateRange 日期范围
+ * @returns 导出文件
  */
 export const exportTableData = async (
   type: 'products' | 'users' | 'orders',
   dateRange?: DateRange,
-) => {
-  return request({
-    url: `/api/analytics/export/${type}`,
-    method: 'POST',
-    data: dateRange,
-    responseType: 'blob',
+): Promise<ApiResponse<Blob>> => {
+  return apiGet(`/analytics/export/${type}`, { dateRange }, async () => {
+    // Mock 导出功能
+    const blob = new Blob([`Mock ${type} export data`], { type: 'application/octet-stream' })
+    return {
+      code: 200,
+      message: 'success',
+      data: blob,
+      timestamp: Date.now(),
+    }
   })
 }
