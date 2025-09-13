@@ -124,14 +124,14 @@
                 <a-radio-button value="month">月</a-radio-button>
               </a-radio-group>
             </template>
-            <div ref="growthChartRef" class="chart-container"></div>
+            <HighChart :options="userChartConfigs.growthChart" :height="'300px'" />
           </a-card>
         </a-col>
         
         <!-- 用户活跃度分布 -->
         <a-col :span="12">
           <a-card title="用户活跃度分布" class="chart-card">
-            <div ref="activityChartRef" class="chart-container"></div>
+            <HighChart :options="userChartConfigs.activityChart" :height="'300px'" />
           </a-card>
         </a-col>
       </a-row>
@@ -140,21 +140,21 @@
         <!-- 用户年龄分布 -->
         <a-col :span="8">
           <a-card title="年龄分布" class="chart-card">
-            <div ref="ageChartRef" class="chart-container"></div>
+            <HighChart :options="userChartConfigs.ageChart" :height="'250px'" />
           </a-card>
         </a-col>
         
         <!-- 用户地域分布 -->
         <a-col :span="8">
           <a-card title="地域分布" class="chart-card">
-            <div ref="regionChartRef" class="chart-container"></div>
+            <HighChart :options="userChartConfigs.regionChart" :height="'250px'" />
           </a-card>
         </a-col>
         
         <!-- 设备类型分布 -->
         <a-col :span="8">
           <a-card title="设备类型" class="chart-card">
-            <div ref="deviceChartRef" class="chart-container"></div>
+            <HighChart :options="userChartConfigs.deviceChart" :height="'250px'" />
           </a-card>
         </a-col>
       </a-row>
@@ -318,10 +318,13 @@ import {
   ArrowUpOutlined,
   ArrowDownOutlined,
   SearchOutlined,
+  FilterOutlined,
 } from '@ant-design/icons-vue'
 import type { TableColumnsType, TableProps } from 'ant-design-vue'
 import { debounce } from 'lodash-es'
 import dayjs, { type Dayjs } from 'dayjs'
+import HighChart from '@/components/common/HighChart.vue'
+import { userChartConfigs } from '@/config/charts/chartConfigs'
 
 /**
  * 用户统计页面
@@ -376,12 +379,7 @@ const statusFilter = ref<string | undefined>(undefined)
 const regionFilter = ref<string | undefined>(undefined)
 const userData = ref<UserItem[]>([])
 
-// 图表引用
-const growthChartRef = ref<HTMLDivElement>()
-const activityChartRef = ref<HTMLDivElement>()
-const ageChartRef = ref<HTMLDivElement>()
-const regionChartRef = ref<HTMLDivElement>()
-const deviceChartRef = ref<HTMLDivElement>()
+// 图表引用已移除，使用 HighChart 组件
 
 // 用户概览数据
 const overview = ref<UserOverview>({
@@ -630,9 +628,7 @@ const loadUserData = async (): Promise<void> => {
     userData.value = mockData
     pagination.total = mockData.length
     
-    // 渲染图表
-    await nextTick()
-    renderCharts()
+    // 图表已通过HighChart组件自动渲染
   } catch (__error) {
     message.error('加载用户数据失败')
   } finally {
@@ -644,28 +640,7 @@ const loadUserData = async (): Promise<void> => {
  * 渲染图表
  */
 const renderCharts = (): void => {
-  // 这里应该使用实际的图表库如 ECharts 或 Chart.js
-  // 为了演示，我们只是创建占位符
-  
-  if (growthChartRef.value) {
-    growthChartRef.value.innerHTML = '<div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">用户增长趋势图表占位符</div>'
-  }
-  
-  if (activityChartRef.value) {
-    activityChartRef.value.innerHTML = '<div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">活跃度分布图表占位符</div>'
-  }
-  
-  if (ageChartRef.value) {
-    ageChartRef.value.innerHTML = '<div style="height: 250px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">年龄分布图表占位符</div>'
-  }
-  
-  if (regionChartRef.value) {
-    regionChartRef.value.innerHTML = '<div style="height: 250px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">地域分布图表占位符</div>'
-  }
-  
-  if (deviceChartRef.value) {
-    deviceChartRef.value.innerHTML = '<div style="height: 250px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">设备类型图表占位符</div>'
-  }
+  // 图表已通过 HighChart 组件渲染，无需手动处理
 }
 
 /**
@@ -682,7 +657,7 @@ const handleDateChange = (dates: [Dayjs, Dayjs] | null): void => {
  * 处理增长周期变化
  */
 const handleGrowthPeriodChange = (): void => {
-  renderCharts()
+  // 图表会自动响应数据变化
 }
 
 /**

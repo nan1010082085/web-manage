@@ -215,6 +215,8 @@
       title="修改密码"
       @ok="handlePasswordSubmit"
       @cancel="handlePasswordCancel"
+      ok-text="确认修改"
+      cancel-text="取消"
     >
       <a-form ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" layout="vertical">
         <a-form-item label="当前密码" name="currentPassword">

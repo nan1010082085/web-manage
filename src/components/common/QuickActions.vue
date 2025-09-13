@@ -73,7 +73,7 @@
     </div>
 
     <!-- 设置弹窗 -->
-    <a-modal v-model:open="showSettings" title="快捷操作设置" width="500px" @ok="saveSettings">
+    <a-modal v-model:open="showSettings" title="快捷操作设置" width="500px" @ok="saveSettings" ok-text="保存" cancel-text="取消">
       <div class="settings-content">
         <div class="setting-item">
           <span>显示快捷操作栏</span>

@@ -1,7 +1,20 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
 import { STORAGE_KEYS } from '@/constants'
 import type { RouteMeta } from '@/types'
 import { generateVueRoutes } from '@/utils/routeGenerator'
+
+/**
+ * 配置 NProgress
+ */
+NProgress.configure({
+  showSpinner: false, // 不显示加载图标
+  speed: 200, // 递增进度条的速度
+  minimum: 0.3, // 初始化时的最小百分比
+  easing: 'ease', // 调整动画设置
+  trickleSpeed: 200 // 自动递增间隔
+})
 
 /**
  * 基础路由配置
@@ -74,6 +87,9 @@ initializeRoutes()
  * 路由守卫
  */
 router.beforeEach((to, from, next) => {
+  // 开始进度条
+  NProgress.start()
+  
   const token = localStorage.getItem(STORAGE_KEYS.TOKEN)
   const requireAuth = to.meta?.requireAuth !== false
 
@@ -106,6 +122,14 @@ router.beforeEach((to, from, next) => {
   }
 
   next()
+})
+
+/**
+ * 路由后置守卫
+ */
+router.afterEach(() => {
+  // 结束进度条
+  NProgress.done()
 })
 
 export default router

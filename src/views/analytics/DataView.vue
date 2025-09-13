@@ -119,6 +119,57 @@
           </a-card>
         </a-col>
       </a-row>
+
+      <!-- 新增图表类型 -->
+      <a-row :gutter="16" style="margin-top: 16px">
+        <!-- 销售对比柱状图 -->
+        <a-col :span="12">
+          <a-card title="月度销售对比" class="chart-card">
+            <template #extra>
+              <a-radio-group v-model:value="barChartPeriod" size="small">
+                <a-radio-button value="month">月度</a-radio-button>
+                <a-radio-button value="quarter">季度</a-radio-button>
+              </a-radio-group>
+            </template>
+            <HighChart :options="barChartOption" height="300px" @created="onBarChartReady" />
+          </a-card>
+        </a-col>
+
+        <!-- 销售趋势面积图 -->
+        <a-col :span="12">
+          <a-card title="销售趋势面积图" class="chart-card">
+            <template #extra>
+              <a-radio-group v-model:value="areaChartType" size="small">
+                <a-radio-button value="revenue">销售额</a-radio-button>
+                <a-radio-button value="profit">利润</a-radio-button>
+              </a-radio-group>
+            </template>
+            <HighChart :options="areaChartOption" height="300px" @created="onAreaChartReady" />
+          </a-card>
+        </a-col>
+      </a-row>
+
+      <!-- 热力图 -->
+      <a-row :gutter="16" style="margin-top: 16px">
+        <a-col :span="24">
+          <a-card title="用户活跃度热力图" class="chart-card">
+            <template #extra>
+              <a-space>
+                <a-select v-model:value="heatmapMetric" style="width: 120px">
+                  <a-select-option value="activity">活跃度</a-select-option>
+                  <a-select-option value="orders">订单量</a-select-option>
+                  <a-select-option value="revenue">销售额</a-select-option>
+                </a-select>
+                <a-button size="small" @click="refreshHeatmap">
+                  <ReloadOutlined />
+                  刷新
+                </a-button>
+              </a-space>
+            </template>
+            <HighChart :options="heatmapOption" height="400px" @created="onHeatmapReady" />
+          </a-card>
+        </a-col>
+      </a-row>
     </div>
 
     <!-- 图表分析区域 -->
@@ -133,7 +184,7 @@
                 <a-radio-button value="orders">订单量</a-radio-button>
               </a-radio-group>
             </template>
-            <div ref="salesChartRef" class="chart-container"></div>
+            <HighChart :options="salesTrendOption" height="300px" @created="onSalesChartReady" />
           </a-card>
         </a-col>
 
@@ -146,7 +197,7 @@
                 <a-radio-button value="active">活跃用户</a-radio-button>
               </a-radio-group>
             </template>
-            <div ref="userChartRef" class="chart-container"></div>
+            <HighChart :options="userGrowthOption" height="300px" @created="onUserChartReady" />
           </a-card>
         </a-col>
       </a-row>
@@ -155,21 +206,33 @@
         <!-- 商品分类销售占比 -->
         <a-col :span="8">
           <a-card title="商品分类销售占比" class="chart-card">
-            <div ref="categoryChartRef" class="chart-container"></div>
+            <HighChart
+              :options="categoryDistributionOption"
+              height="300px"
+              @created="onCategoryChartReady"
+            />
           </a-card>
         </a-col>
 
         <!-- 地区销售分布 -->
         <a-col :span="8">
           <a-card title="地区销售分布" class="chart-card">
-            <div ref="regionChartRef" class="chart-container"></div>
+            <HighChart
+              :options="regionDistributionOption"
+              height="300px"
+              @created="onRegionChartReady"
+            />
           </a-card>
         </a-col>
 
         <!-- 支付方式分布 -->
         <a-col :span="8">
           <a-card title="支付方式分布" class="chart-card">
-            <div ref="paymentChartRef" class="chart-container"></div>
+            <HighChart
+              :options="paymentDistributionOption"
+              height="300px"
+              @created="onPaymentChartReady"
+            />
           </a-card>
         </a-col>
       </a-row>
@@ -330,6 +393,11 @@
         </a-row>
       </a-card>
     </div>
+
+    <!-- 高级图表分析 -->
+    <div class="advanced-charts-section">
+      <AdvancedCharts />
+    </div>
   </div>
 </template>
 
@@ -350,87 +418,62 @@ import {
   TeamOutlined,
 } from '@ant-design/icons-vue'
 import type { TableColumnsType, TableProps } from 'ant-design-vue'
-
+import HighChart from '@/components/common/HighChart.vue'
+import AdvancedCharts from '@/components/charts/AdvancedCharts.vue'
+import {
+  getOverviewData,
+  getChartData,
+  getSalesTrendData,
+  getUserGrowthData,
+  getCategoryDistributionData,
+  getRegionDistributionData,
+  getPaymentDistributionData,
+  getBatchChartData,
+  getHeatmapData,
+  getBarChartData,
+  getAreaChartData,
+  getTableData,
+  getRealtimeData,
+} from '@/api/analytics'
+import { dataAnalysisChartConfigs as chartConfigs } from '@/config/charts/chartConfigs'
+import type { Options } from 'highcharts'
+import type * as Highcharts from 'highcharts'
 import dayjs, { type Dayjs } from 'dayjs'
-import * as echarts from 'echarts'
+import { omit } from 'lodash-es'
+import 'highcharts/modules/heatmap'
+import type {
+  DataOverview,
+  RealtimeData,
+  OrderDataItem,
+  UserDataItem,
+  ProductDataItem,
+  SalesChartType,
+  UserChartType,
+  TableDataType,
+  BarChartPeriod,
+  AreaChartType,
+  HeatmapMetric,
+  TableDataItem,
+  DateRange,
+} from './types'
 
 /**
  * 数据分析页面
  */
 
-interface DataOverview {
-  totalRevenue: number
-  revenueTrend: number
-  totalOrders: number
-  ordersTrend: number
-  newUsers: number
-  usersTrend: number
-  conversionRate: number
-  conversionTrend: number
-}
-
-interface RealtimeData {
-  onlineUsers: number
-  onlineUsersChange: number
-  todayOrders: number
-  todayOrdersChange: number
-  todayRevenue: number
-  todayRevenueChange: number
-  pageViews: number
-  pageViewsChange: number
-}
-
-interface OrderDataItem {
-  id: string
-  orderNo: string
-  userName: string
-  amount: number
-  createTime: string
-  paymentMethod: string
-  status: string
-}
-
-interface UserDataItem {
-  id: string
-  name: string
-  registerTime: string
-  orderCount: number
-  totalSpent: number
-  trend: number
-  status: string
-}
-
-interface ProductDataItem {
-  id: string
-  name: string
-  sales: number
-  revenue: number
-  trend: number
-  status: string
-}
-
 // 响应式数据
 const dateRange = ref<[Dayjs, Dayjs]>([dayjs().subtract(30, 'day'), dayjs()])
-const salesChartType = ref('revenue')
-const userChartType = ref('new')
-const tableDataType = ref('products')
+const salesChartType = ref<SalesChartType>('revenue')
+const userChartType = ref<UserChartType>('new')
+const tableDataType = ref<TableDataType>('products')
 const realtimeEnabled = ref(true)
 const lastUpdateTime = ref(dayjs().format('HH:mm:ss'))
 const tableLoading = ref(false)
+const barChartPeriod = ref<BarChartPeriod>('month')
+const areaChartType = ref<AreaChartType>('revenue')
+const heatmapMetric = ref<HeatmapMetric>('activity')
 
-// 图表引用
-const salesChartRef = ref<HTMLDivElement>()
-const userChartRef = ref<HTMLDivElement>()
-const categoryChartRef = ref<HTMLDivElement>()
-const regionChartRef = ref<HTMLDivElement>()
-const paymentChartRef = ref<HTMLDivElement>()
-
-// 图表实例
-let salesChart: echarts.ECharts | null = null
-let userChart: echarts.ECharts | null = null
-let categoryChart: echarts.ECharts | null = null
-let regionChart: echarts.ECharts | null = null
-let paymentChart: echarts.ECharts | null = null
+// 图表引用已移除，使用HighChart组件
 
 // 实时数据更新定时器
 let realtimeTimer: NodeJS.Timeout | null = null
@@ -458,6 +501,16 @@ const realtimeData = ref<RealtimeData>({
   pageViews: 0,
   pageViewsChange: 0,
 })
+
+// 图表数据
+const salesTrendData = ref<any>(null)
+const userGrowthData = ref<any>(null)
+const categoryDistributionData = ref<any>(null)
+const regionDistributionData = ref<any>(null)
+const paymentDistributionData = ref<any>(null)
+const barChartData = ref<any>(null)
+const areaChartData = ref<any>(null)
+const heatmapData = ref<any>(null)
 
 // 表格数据
 const tableData = reactive({
@@ -655,6 +708,239 @@ const currentTableData = computed(() => {
   )[]
 })
 
+// 图表配置计算属性
+const salesTrendOption = computed<Options>(() => {
+  const config = chartConfigs.salesTrend
+  const data = salesTrendData.value
+
+  if (!data || !Array.isArray(data)) return config
+
+  // 创建数据副本避免重复计算
+  const categories = data.map((item: any) => item.date)
+  const seriesData = data.map((item: any) =>
+    salesChartType.value === 'revenue' ? item.revenue : item.orders,
+  )
+
+  return {
+    ...config,
+    xAxis: {
+      ...config.xAxis,
+      categories,
+    },
+    series: [
+      {
+        name: salesChartType.value === 'revenue' ? '销售额' : '订单量',
+        type: 'line',
+        data: seriesData,
+        color: '#1890ff',
+      },
+    ],
+  }
+})
+
+const userGrowthOption = computed<Options>(() => {
+  const config = chartConfigs.userGrowth
+  const data = userGrowthData.value
+
+  if (!data || !Array.isArray(data)) return config
+
+  // 创建数据副本避免重复计算
+  const categories = data.map((item: any) => item.date)
+  const seriesData = data.map((item: any) =>
+    userChartType.value === 'new' ? item.newUsers : item.activeUsers,
+  )
+
+  return {
+    ...config,
+    xAxis: {
+      ...config.xAxis,
+      categories,
+    },
+    series: [
+      {
+        name: userChartType.value === 'new' ? '新增用户' : '活跃用户',
+        type: 'line',
+        data: seriesData,
+        color: '#52c41a',
+      },
+    ],
+  }
+})
+
+const categoryDistributionOption = computed<Options>(() => {
+  const config = chartConfigs.categoryDistribution
+  const data = categoryDistributionData.value
+  if (!data || !Array.isArray(data)) return config
+
+  // 创建数据副本避免重复计算
+  const seriesData = data.map((item: any) => ({
+    name: item.category,
+    y: item.value,
+  }))
+
+  return {
+    ...config,
+    series: [
+      {
+        name: '分类分布',
+        type: 'pie',
+        data: seriesData,
+      },
+    ],
+  }
+})
+
+const regionDistributionOption = computed<Options>(() => {
+  const config = chartConfigs.regionDistribution
+  const data = regionDistributionData.value
+
+  if (!data || !Array.isArray(data)) return config
+
+  // 创建数据副本避免重复计算
+  const seriesData = data.map((item: any) => ({
+    name: item.region,
+    y: item.value,
+  }))
+
+  return {
+    ...config,
+    series: [
+      {
+        name: '地区分布',
+        type: 'pie',
+        data: seriesData,
+      },
+    ],
+  }
+})
+
+const paymentDistributionOption = computed<Options>(() => {
+  const config = chartConfigs.paymentDistribution
+  const data = paymentDistributionData.value
+
+  if (!data || !Array.isArray(data)) return config
+
+  // 创建数据副本避免重复计算
+  const seriesData = data.map((item: any) => ({
+    name: item.method,
+    y: item.value,
+  }))
+
+  return {
+    ...config,
+    series: [
+      {
+        name: '支付方式分布',
+        type: 'pie',
+        data: seriesData,
+      },
+    ],
+  }
+})
+
+const barChartOption = computed<Options>(() => {
+  const config = chartConfigs.barChart
+  const data = barChartData.value
+  if (!data || !Array.isArray(data)) return config
+
+  // 创建数据副本避免重复计算
+  const categories = data.map((item: any) => item.period)
+  const currentYearData = data.map((item: any) => item.currentYear)
+  const lastYearData = data.map((item: any) => item.lastYear)
+
+  return {
+    ...config,
+    xAxis: {
+      ...config.xAxis,
+      categories,
+    },
+    series: [
+      {
+        name: '本年',
+        type: 'column',
+        data: currentYearData,
+        color: '#1890ff',
+      },
+      {
+        name: '去年',
+        type: 'column',
+        data: lastYearData,
+        color: '#52c41a',
+      },
+    ],
+  }
+})
+
+const areaChartOption = computed<Options>(() => {
+  const config = chartConfigs.areaChart
+  const data = areaChartData.value
+  const chartType = areaChartType.value
+
+  if (!data || !Array.isArray(data)) return config
+
+  // 避免在计算属性中直接修改响应式数据，创建新的数据副本
+  const categories = data.map((item: any) => item.date)
+  const revenueData = data.map((item: any) => item.revenue)
+  const profitData = data.map((item: any) => item.profit)
+
+  return {
+    ...config,
+    xAxis: {
+      ...config.xAxis,
+      categories,
+    },
+    series: [
+      {
+        name: chartType === 'revenue' ? '收入' : '利润',
+        type: 'area',
+        data: chartType === 'revenue' ? revenueData : profitData,
+        color: chartType === 'revenue' ? '#1890ff' : '#52c41a',
+      },
+    ],
+  }
+})
+
+const heatmapOption = computed<Options>(() => {
+  const config = chartConfigs.heatmap
+  const data = heatmapData.value
+  if (!data || !Array.isArray(data)) return config
+
+  console.log('heatmapOption config', config)
+  console.log('heatmapOption', data)
+
+  // 生成小时和星期的分类
+  const hours = Array.from({ length: 24 }, (_, i) => `${i}:00`)
+  const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+
+  // 转换数据格式为热力图需要的格式
+  const seriesData = data.map((item: any) => [item.x, item.y, item.value])
+
+  return {
+    ...config,
+    xAxis: {
+      ...config.xAxis,
+      categories: hours,
+    },
+    yAxis: {
+      ...config.yAxis,
+      categories: days,
+    },
+    series: [
+      {
+        name: '活动热力图',
+        type: 'heatmap',
+        data: seriesData,
+        dataLabels: [
+          {
+            enabled: true,
+            color: 'contrast',
+          },
+        ],
+      },
+    ],
+  }
+})
+
 /**
  * 获取状态颜色
  */
@@ -674,280 +960,91 @@ const getStatusColor = (status: string): string => {
 }
 
 /**
- * 初始化图表
+ * 图表创建完成事件处理
  */
-const initCharts = async (): Promise<void> => {
-  await nextTick()
+const onSalesChartReady = (chartInstance: Highcharts.Chart): void => {
+  console.log('销售趋势图表已创建')
+}
 
-  // 销售趋势图
-  if (salesChartRef.value) {
-    salesChart = echarts.init(salesChartRef.value)
-    updateSalesChart()
-  }
+const onUserChartReady = (chartInstance: Highcharts.Chart): void => {
+  console.log('用户增长图表已创建')
+}
 
-  // 用户增长图
-  if (userChartRef.value) {
-    userChart = echarts.init(userChartRef.value)
-    updateUserChart()
-  }
+const onCategoryChartReady = (chartInstance: Highcharts.Chart): void => {
+  console.log('分类分布图表已创建')
+}
 
-  // 商品分类图
-  if (categoryChartRef.value) {
-    categoryChart = echarts.init(categoryChartRef.value)
-    updateCategoryChart()
-  }
+const onRegionChartReady = (chartInstance: Highcharts.Chart): void => {
+  console.log('地区分布图表已创建')
+}
 
-  // 地区分布图
-  if (regionChartRef.value) {
-    regionChart = echarts.init(regionChartRef.value)
-    updateRegionChart()
-  }
+const onPaymentChartReady = (chartInstance: Highcharts.Chart): void => {
+  console.log('支付方式图表已创建')
+}
 
-  // 支付方式图
-  if (paymentChartRef.value) {
-    paymentChart = echarts.init(paymentChartRef.value)
-    updatePaymentChart()
+const onBarChartReady = (chartInstance: Highcharts.Chart): void => {
+  console.log('柱状图表已创建')
+}
+
+const onAreaChartReady = (chartInstance: Highcharts.Chart): void => {
+  console.log('面积图表已创建')
+}
+
+const onHeatmapReady = (chartInstance: Highcharts.Chart): void => {
+  console.log('热力图表已创建')
+}
+
+/**
+ * 加载图表数据
+ */
+const loadChartsData = async (): Promise<void> => {
+  try {
+    // 加载各种图表数据
+    const [
+      salesData,
+      userData,
+      categoryData,
+      regionData,
+      paymentData,
+      barData,
+      areaData,
+      heatData,
+    ] = await Promise.all([
+      getSalesTrendData(),
+      getUserGrowthData(),
+      getCategoryDistributionData(),
+      getRegionDistributionData(),
+      getPaymentDistributionData(),
+      getBarChartData(),
+      getAreaChartData(),
+      getHeatmapData(),
+    ])
+
+    salesTrendData.value = salesData
+    userGrowthData.value = userData
+    categoryDistributionData.value = categoryData
+    regionDistributionData.value = regionData
+    paymentDistributionData.value = paymentData
+    barChartData.value = barData
+    areaChartData.value = areaData
+    heatmapData.value = heatData
+  } catch (error) {
+    message.error('加载图表数据失败')
+    console.error('图表数据加载错误:', error)
   }
 }
 
 /**
- * 更新销售趋势图
+ * 刷新热力图数据
  */
-const updateSalesChart = (): void => {
-  if (!salesChart) return
-
-  const option = {
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'cross',
-      },
-    },
-    legend: {
-      data: [salesChartType.value === 'revenue' ? '销售额' : '订单量'],
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '3%',
-      containLabel: true,
-    },
-    xAxis: {
-      type: 'category',
-      boundaryGap: false,
-      data: [
-        '01-01',
-        '01-02',
-        '01-03',
-        '01-04',
-        '01-05',
-        '01-06',
-        '01-07',
-        '01-08',
-        '01-09',
-        '01-10',
-      ],
-    },
-    yAxis: {
-      type: 'value',
-    },
-    series: [
-      {
-        name: salesChartType.value === 'revenue' ? '销售额' : '订单量',
-        type: 'line',
-        stack: 'Total',
-        smooth: true,
-        data:
-          salesChartType.value === 'revenue'
-            ? [12000, 13200, 10100, 13400, 9000, 23000, 21000, 19000, 14000, 16000]
-            : [120, 132, 101, 134, 90, 230, 210, 190, 140, 160],
-        areaStyle: {
-          opacity: 0.3,
-        },
-      },
-    ],
+const refreshHeatmap = async (): Promise<void> => {
+  try {
+    const heatData = await getHeatmapData()
+    heatmapData.value = heatData
+    message.success('热力图数据已刷新')
+  } catch (error) {
+    message.error('刷新热力图数据失败')
   }
-
-  salesChart.setOption(option)
-}
-
-/**
- * 更新用户增长图
- */
-const updateUserChart = (): void => {
-  if (!userChart) return
-
-  const option = {
-    tooltip: {
-      trigger: 'axis',
-    },
-    legend: {
-      data: [userChartType.value === 'new' ? '新增用户' : '活跃用户'],
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '3%',
-      containLabel: true,
-    },
-    xAxis: {
-      type: 'category',
-      data: [
-        '01-01',
-        '01-02',
-        '01-03',
-        '01-04',
-        '01-05',
-        '01-06',
-        '01-07',
-        '01-08',
-        '01-09',
-        '01-10',
-      ],
-    },
-    yAxis: {
-      type: 'value',
-    },
-    series: [
-      {
-        name: userChartType.value === 'new' ? '新增用户' : '活跃用户',
-        type: 'bar',
-        data:
-          userChartType.value === 'new'
-            ? [320, 302, 301, 334, 390, 330, 320, 280, 250, 300]
-            : [1200, 1320, 1010, 1340, 900, 2300, 2100, 1900, 1400, 1600],
-        itemStyle: {
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: '#83bff6' },
-            { offset: 0.5, color: '#188df0' },
-            { offset: 1, color: '#188df0' },
-          ]),
-        },
-      },
-    ],
-  }
-
-  userChart.setOption(option)
-}
-
-/**
- * 更新商品分类图
- */
-const updateCategoryChart = (): void => {
-  if (!categoryChart) return
-
-  const option = {
-    tooltip: {
-      trigger: 'item',
-      formatter: '{a} <br/>{b}: {c} ({d}%)',
-    },
-    legend: {
-      orient: 'vertical',
-      left: 'left',
-    },
-    series: [
-      {
-        name: '销售占比',
-        type: 'pie',
-        radius: '50%',
-        data: [
-          { value: 1048, name: '手机数码' },
-          { value: 735, name: '服装鞋包' },
-          { value: 580, name: '家居用品' },
-          { value: 484, name: '美妆护肤' },
-          { value: 300, name: '运动户外' },
-        ],
-        emphasis: {
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)',
-          },
-        },
-      },
-    ],
-  }
-
-  categoryChart.setOption(option)
-}
-
-/**
- * 更新地区分布图
- */
-const updateRegionChart = (): void => {
-  if (!regionChart) return
-
-  const option = {
-    tooltip: {
-      trigger: 'item',
-    },
-    series: [
-      {
-        name: '销售额',
-        type: 'pie',
-        radius: ['40%', '70%'],
-        avoidLabelOverlap: false,
-        label: {
-          show: false,
-          position: 'center',
-        },
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: '30',
-            fontWeight: 'bold',
-          },
-        },
-        labelLine: {
-          show: false,
-        },
-        data: [
-          { value: 335, name: '北京' },
-          { value: 310, name: '上海' },
-          { value: 234, name: '广州' },
-          { value: 135, name: '深圳' },
-          { value: 1548, name: '其他' },
-        ],
-      },
-    ],
-  }
-
-  regionChart.setOption(option)
-}
-
-/**
- * 更新支付方式图
- */
-const updatePaymentChart = (): void => {
-  if (!paymentChart) return
-
-  const option = {
-    tooltip: {
-      trigger: 'item',
-    },
-    series: [
-      {
-        name: '支付方式',
-        type: 'pie',
-        radius: '50%',
-        data: [
-          { value: 1200, name: '微信支付' },
-          { value: 800, name: '支付宝' },
-          { value: 300, name: '银行卡' },
-          { value: 100, name: '其他' },
-        ],
-        emphasis: {
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)',
-          },
-        },
-      },
-    ],
-  }
-
-  paymentChart.setOption(option)
 }
 
 /**
@@ -955,21 +1052,10 @@ const updatePaymentChart = (): void => {
  */
 const loadOverviewData = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    overview.value = {
-      totalRevenue: 2456789.5,
-      revenueTrend: 12.5,
-      totalOrders: 15678,
-      ordersTrend: 8.3,
-      newUsers: 3456,
-      usersTrend: -2.1,
-      conversionRate: 3.45,
-      conversionTrend: 5.2,
-    }
+    overview.value = await getOverviewData()
   } catch (error) {
     message.error('加载概览数据失败')
+    console.error('概览数据加载错误:', error)
   }
 }
 
@@ -978,20 +1064,8 @@ const loadOverviewData = async (): Promise<void> => {
  */
 const loadRealtimeData = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 200))
-
-    realtimeData.value = {
-      onlineUsers: Math.floor(Math.random() * 1000) + 500,
-      onlineUsersChange: Math.floor(Math.random() * 50) + 10,
-      todayOrders: Math.floor(Math.random() * 500) + 200,
-      todayOrdersChange: Math.floor(Math.random() * 20) + 5,
-      todayRevenue: Math.floor(Math.random() * 100000) + 50000,
-      todayRevenueChange: Math.floor(Math.random() * 20) + 5,
-      pageViews: Math.floor(Math.random() * 10000) + 5000,
-      pageViewsChange: Math.floor(Math.random() * 30) + 10,
-    }
-
+    // 实时数据现在从getOverviewData中获取，这里只更新时间戳
+    realtimeData.value = await getRealtimeData()
     lastUpdateTime.value = dayjs().format('HH:mm:ss')
   } catch (error) {
     console.error('加载实时数据失败:', error)
@@ -1004,118 +1078,38 @@ const loadRealtimeData = async (): Promise<void> => {
 const loadTableData = async (): Promise<void> => {
   tableLoading.value = true
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 800))
+    const dateRageFormat = dateRange.value.map((item) => dayjs(item).format('YYYY-MM-DD'))
+    const response = await getTableData(tableDataType.value, {
+      page: tablePagination.current,
+      pageSize: tablePagination.pageSize,
+      dateRange: {
+        startDate: dateRageFormat[0],
+        endDate: dateRageFormat[1],
+      },
+    })
 
-    // 模拟商品数据
-    tableData.products = [
-      {
-        id: 'P001',
-        name: 'iPhone 15 Pro',
-        sales: 1234,
-        revenue: 12340000,
-        trend: 15.6,
-        status: '热销',
-      },
-      {
-        id: 'P002',
-        name: 'MacBook Pro',
-        sales: 567,
-        revenue: 8900000,
-        trend: -3.2,
-        status: '正常',
-      },
-      {
-        id: 'P003',
-        name: 'AirPods Pro',
-        sales: 2345,
-        revenue: 4690000,
-        trend: 28.9,
-        status: '热销',
-      },
-      {
-        id: 'P004',
-        name: 'iPad Air',
-        sales: 890,
-        revenue: 3560000,
-        trend: 5.7,
-        status: '正常',
-      },
-      {
-        id: 'P005',
-        name: 'Apple Watch',
-        sales: 456,
-        revenue: 1824000,
-        trend: -8.1,
-        status: '滞销',
-      },
-    ]
+    // 验证响应数据结构
+    if (!response || !Array.isArray(response.list)) {
+      throw new Error('Invalid table data response')
+    }
 
-    // 模拟用户数据
-    tableData.users = [
-      {
-        id: 'U001',
-        name: '张三',
-        registerTime: '2024-01-01',
-        orderCount: 15,
-        totalSpent: 25600,
-        trend: 12.5,
-        status: '活跃',
-      },
-      {
-        id: 'U002',
-        name: '李四',
-        registerTime: '2024-01-02',
-        orderCount: 8,
-        totalSpent: 12800,
-        trend: -2.3,
-        status: '普通',
-      },
-      {
-        id: 'U003',
-        name: '王五',
-        registerTime: '2024-01-03',
-        orderCount: 3,
-        totalSpent: 4500,
-        trend: -15.6,
-        status: '沉睡',
-      },
-    ]
+    // 根据类型安全地赋值数
+    const cleanedData = response.list
+    if (tableDataType.value === 'products') {
+      tableData.products = cleanedData as ProductDataItem[]
+    } else if (tableDataType.value === 'users') {
+      tableData.users = cleanedData as UserDataItem[]
+    } else if (tableDataType.value === 'orders') {
+      tableData.orders = cleanedData as OrderDataItem[]
+    }
 
-    // 模拟订单数据
-    tableData.orders = [
-      {
-        id: 'O001',
-        orderNo: 'ORD202401001',
-        userName: '张三',
-        amount: 12999,
-        createTime: '2024-01-15 10:30:00',
-        paymentMethod: '微信支付',
-        status: '已完成',
-      },
-      {
-        id: 'O002',
-        orderNo: 'ORD202401002',
-        userName: '李四',
-        amount: 8999,
-        createTime: '2024-01-15 11:20:00',
-        paymentMethod: '支付宝',
-        status: '进行中',
-      },
-      {
-        id: 'O003',
-        orderNo: 'ORD202401003',
-        userName: '王五',
-        amount: 1599,
-        createTime: '2024-01-15 14:15:00',
-        paymentMethod: '银行卡',
-        status: '已取消',
-      },
-    ]
-
-    tablePagination.total = currentTableData.value.length
+    // 更新分页信息
+    tablePagination.total = response.total || 0
+    tablePagination.current = response.current || tablePagination.current
+    tablePagination.pageSize = response.pageSize || tablePagination.pageSize
   } catch (error) {
     message.error('加载表格数据失败')
+    console.error('表格数据加载错误:', error)
   } finally {
     tableLoading.value = false
   }
@@ -1212,51 +1206,25 @@ const exportTableData = (): void => {
 /**
  * 刷新数据
  */
-const refreshData = (): void => {
-  loadOverviewData()
-  loadRealtimeData()
-  loadTableData()
-
-  // 更新图表
-  setTimeout(() => {
-    updateSalesChart()
-    updateUserChart()
-    updateCategoryChart()
-    updateRegionChart()
-    updatePaymentChart()
-  }, 100)
+const refreshData = async (): Promise<void> => {
+  await Promise.all([loadOverviewData(), loadRealtimeData(), loadTableData(), loadChartsData()])
+  message.success('数据已刷新')
 }
 
-// 监听图表类型变化
-watch(salesChartType, () => {
-  updateSalesChart()
-})
-
-watch(userChartType, () => {
-  updateUserChart()
-})
+// 图表类型变化通过computed属性自动响应，无需额外监听
 
 /**
  * 组件挂载时初始化
  */
-onMounted(() => {
-  loadOverviewData()
-  loadRealtimeData()
-  loadTableData()
-  initCharts()
+onMounted(async () => {
+  // loadOverviewData现在同时加载overview和realtime数据
+  await Promise.all([loadOverviewData(), loadTableData(), loadChartsData()])
 
   if (realtimeEnabled.value) {
     startRealtimeUpdate()
   }
 
-  // 监听窗口大小变化
-  window.addEventListener('resize', () => {
-    salesChart?.resize()
-    userChart?.resize()
-    categoryChart?.resize()
-    regionChart?.resize()
-    paymentChart?.resize()
-  })
+  // 图表已通过HighChart组件自动处理窗口大小变化
 })
 
 /**
@@ -1265,11 +1233,7 @@ onMounted(() => {
 onUnmounted(() => {
   stopRealtimeUpdate()
 
-  salesChart?.dispose()
-  userChart?.dispose()
-  categoryChart?.dispose()
-  regionChart?.dispose()
-  paymentChart?.dispose()
+  // 图表已通过HighChart组件自动清理
 
   window.removeEventListener('resize', () => {})
 })
@@ -1468,6 +1432,10 @@ onUnmounted(() => {
       }
     }
   }
+}
+
+.advanced-charts-section {
+  margin-top: 24px;
 }
 
 // 响应式设计

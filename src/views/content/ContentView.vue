@@ -408,7 +408,7 @@
       width="1000px"
       @ok="handleCreateSubmit"
       @cancel="handleCreateCancel"
-    >
+     ok-text="确定" cancel-text="取消">
       <a-form
         ref="createFormRef"
         :model="createForm"
@@ -516,7 +516,7 @@
       title="内容详情"
       width="800px"
       :footer="null"
-    >
+     ok-text="确定" cancel-text="取消">
       <div v-if="currentContent" class="content-detail">
         <a-descriptions :column="2" bordered>
           <a-descriptions-item label="标题" :span="2">
@@ -575,7 +575,7 @@
     </a-modal>
 
     <!-- 图片预览弹窗 -->
-    <a-modal v-model:open="previewVisible" :footer="null">
+    <a-modal v-model:open="previewVisible" :footer="null" ok-text="确定" cancel-text="取消">
       <img alt="preview" style="width: 100%" :src="previewImage" />
     </a-modal>
   </div>

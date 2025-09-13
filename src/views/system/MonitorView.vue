@@ -172,7 +172,7 @@
                 <a-radio-button value="24h">24小时</a-radio-button>
               </a-radio-group>
             </template>
-            <div ref="cpuChartRef" class="chart-container"></div>
+            <HighChart :options="monitorChartConfigs.cpuChart" :height="'300px'" />
           </a-card>
         </a-col>
         <a-col :span="12">
@@ -184,7 +184,7 @@
                 <a-radio-button value="24h">24小时</a-radio-button>
               </a-radio-group>
             </template>
-            <div ref="memoryChartRef" class="chart-container"></div>
+            <HighChart :options="monitorChartConfigs.memoryChart" :height="'300px'" />
           </a-card>
         </a-col>
       </a-row>
@@ -195,7 +195,7 @@
       <a-row :gutter="16">
         <a-col :span="12">
           <a-card title="网络流量" class="chart-card">
-            <div ref="networkChartRef" class="chart-container"></div>
+            <HighChart :options="monitorChartConfigs.networkChart" :height="'300px'" />
           </a-card>
         </a-col>
         <a-col :span="12">
@@ -289,7 +289,7 @@
       :title="`${selectedService?.name} 服务详情`"
       :footer="null"
       width="800px"
-    >
+     ok-text="确定" cancel-text="取消">
       <div class="service-detail" v-if="selectedService">
         <a-descriptions :column="2" bordered>
           <a-descriptions-item label="服务名称">{{ selectedService.name }}</a-descriptions-item>
@@ -351,6 +351,8 @@ import {
   WarningOutlined,
   InfoCircleOutlined,
 } from '@ant-design/icons-vue'
+import HighChart from '@/components/common/HighChart.vue'
+import { monitorChartConfigs } from '@/config/charts/chartConfigs'
 
 
 /**
@@ -415,10 +417,7 @@ const serviceDetailModalVisible = ref(false)
 const selectedService = ref<Service | null>(null)
 const refreshTimer = ref<NodeJS.Timeout | null>(null)
 
-// 图表引用
-const cpuChartRef = ref<HTMLDivElement>()
-const memoryChartRef = ref<HTMLDivElement>()
-const networkChartRef = ref<HTMLDivElement>()
+// 图表引用已移除，使用 HighChart 组件
 
 // 系统状态
 const systemStatus = ref<SystemStatus>({
@@ -703,9 +702,7 @@ const loadMonitorData = async (): Promise<void> => {
       },
     ]
     
-    // 渲染图表
-    await nextTick()
-    renderCharts()
+    // 图表已通过HighChart组件自动渲染
   } catch (__error) {
     message.error('加载监控数据失败')
   }
@@ -715,20 +712,7 @@ const loadMonitorData = async (): Promise<void> => {
  * 渲染图表
  */
 const renderCharts = (): void => {
-  // 这里应该使用实际的图表库如 ECharts 或 Chart.js
-  // 为了演示，我们只是创建占位符
-  
-  if (cpuChartRef.value) {
-    cpuChartRef.value.innerHTML = '<div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">CPU使用率图表占位符</div>'
-  }
-  
-  if (memoryChartRef.value) {
-    memoryChartRef.value.innerHTML = '<div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">内存使用率图表占位符</div>'
-  }
-  
-  if (networkChartRef.value) {
-    networkChartRef.value.innerHTML = '<div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">网络流量图表占位符</div>'
-  }
+  // 图表已通过 HighChart 组件渲染，无需手动处理
 }
 
 /**
@@ -775,14 +759,14 @@ const stopAutoRefresh = (): void => {
  * 处理CPU时间范围变化
  */
 const handleCpuTimeRangeChange = (): void => {
-  renderCharts()
+  // 图表会自动响应数据变化
 }
 
 /**
  * 处理内存时间范围变化
  */
 const handleMemoryTimeRangeChange = (): void => {
-  renderCharts()
+  // 图表会自动响应数据变化
 }
 
 /**

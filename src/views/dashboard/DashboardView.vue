@@ -66,10 +66,7 @@
           </a-select>
         </div>
         <div class="chart-content">
-          <div class="chart-placeholder">
-            <LineChartOutlined class="text-6xl text-gray-300" />
-            <p class="text-gray-500 mt-4">销售趋势图表</p>
-          </div>
+          <HighChart :options="salesTrendOptions" :loading="loading.salesTrend" height="400px" />
         </div>
       </div>
 
@@ -79,14 +76,7 @@
           <h3 class="chart-title">订单状态分布</h3>
         </div>
         <div class="chart-content">
-          <div class="order-status-list">
-            <div class="status-item" v-for="item in orderStatusData" :key="item.status">
-              <div class="status-indicator" :style="{ backgroundColor: item.color }"></div>
-              <span class="status-label">{{ item.label }}</span>
-              <span class="status-count">{{ item.count }}</span>
-              <span class="status-percentage">{{ item.percentage }}%</span>
-            </div>
-          </div>
+          <HighChart :options="orderStatusOptions" :loading="loading.orderStatus" height="300px" />
         </div>
       </div>
     </div>
@@ -97,7 +87,7 @@
         <h3 class="section-title">最近活动</h3>
         <a-button type="link">查看全部</a-button>
       </div>
-      
+
       <div class="activity-list">
         <div class="activity-item" v-for="activity in recentActivities" :key="activity.id">
           <div class="activity-avatar">
@@ -119,14 +109,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed, watch, toRaw } from 'vue'
 import {
   UserOutlined,
   ShoppingOutlined,
   FileTextOutlined,
   DollarOutlined,
-  LineChartOutlined
 } from '@ant-design/icons-vue'
+import HighChart from '@/components/common/HighChart.vue'
+import { getSalesTrendData, getOrderStatusData, getRealtimeOverview } from '@/api/charts'
+import { advancedChartConfigs, dataAnalysisChartConfigs } from '@/config/charts/chartConfigs'
+import type { Options } from 'highcharts'
+import type * as Highcharts from 'highcharts'
 
 interface Stats {
   totalUsers: number
@@ -160,16 +154,90 @@ const stats = reactive<Stats>({
   totalUsers: 0,
   totalProducts: 0,
   totalOrders: 0,
-  totalRevenue: '0'
+  totalRevenue: '0',
 })
 
-const orderStatusData = ref<OrderStatus[]>([
-  { status: 'pending', label: '待处理', count: 45, percentage: 25, color: '#faad14' },
-  { status: 'processing', label: '处理中', count: 32, percentage: 18, color: '#1890ff' },
-  { status: 'shipped', label: '已发货', count: 68, percentage: 38, color: '#52c41a' },
-  { status: 'delivered', label: '已完成', count: 34, percentage: 19, color: '#722ed1' }
-])
+// 图表数据
+const salesTrendData = ref<{ categories?: string[]; series?: Highcharts.SeriesOptionsType[] }>({
+  categories: [],
+  series: [],
+})
+const orderStatusData = ref<any[]>([])
+const loading = reactive({
+  salesTrend: false,
+  orderStatus: false,
+})
 
+// 图表配置
+const salesTrendOptions = computed(() => {
+  const baseConfig = dataAnalysisChartConfigs.salesTrend
+  if (!salesTrendData.value || !salesTrendData.value.categories || !salesTrendData.value.series) {
+    return baseConfig
+  }
+  const { categories = [], series = [] } = toRaw(salesTrendData.value)
+
+  return {
+    ...baseConfig,
+    xAxis: {
+      ...baseConfig.xAxis,
+      categories: categories,
+    },
+    series: series,
+  }
+})
+
+const orderStatusOptions = computed(() => {
+  const baseConfig = advancedChartConfigs.orderStatus
+  if (!orderStatusData.value || orderStatusData.value.length === 0) {
+    return baseConfig
+  }
+
+  return {
+    ...baseConfig,
+    series: [
+      {
+        ...baseConfig?.series?.[0],
+        data: orderStatusData.value,
+      },
+    ],
+  } as Options
+})
+
+/**
+ * 加载销售趋势数据
+ */
+const loadSalesTrend = async () => {
+  try {
+    loading.salesTrend = true
+    const response = await getSalesTrendData(salesPeriod.value)
+    if (response.code === 200) {
+      salesTrendData.value = response.data
+    }
+  } catch (error) {
+    console.error('加载销售趋势数据失败:', error)
+  } finally {
+    loading.salesTrend = false
+  }
+}
+
+/**
+ * 加载订单状态数据
+ */
+const loadOrderStatus = async () => {
+  try {
+    loading.orderStatus = true
+    const response = await getOrderStatusData()
+    if (response.code === 200) {
+      orderStatusData.value = response.data
+    }
+  } catch (error) {
+    console.error('加载订单状态数据失败:', error)
+  } finally {
+    loading.orderStatus = false
+  }
+}
+
+// 最近活动数据
 const recentActivities = ref<Activity[]>([
   {
     id: 1,
@@ -178,7 +246,7 @@ const recentActivities = ref<Activity[]>([
     text: '创建了新订单 #12345',
     time: '2分钟前',
     type: '订单',
-    typeColor: 'blue'
+    typeColor: 'blue',
   },
   {
     id: 2,
@@ -187,7 +255,7 @@ const recentActivities = ref<Activity[]>([
     text: '更新了商品库存',
     time: '5分钟前',
     type: '库存',
-    typeColor: 'green'
+    typeColor: 'green',
   },
   {
     id: 3,
@@ -196,7 +264,7 @@ const recentActivities = ref<Activity[]>([
     text: '注册了新账户',
     time: '10分钟前',
     type: '用户',
-    typeColor: 'orange'
+    typeColor: 'orange',
   },
   {
     id: 4,
@@ -205,65 +273,31 @@ const recentActivities = ref<Activity[]>([
     text: '取消了订单 #12340',
     time: '15分钟前',
     type: '订单',
-    typeColor: 'red'
-  }
+    typeColor: 'red',
+  },
 ])
 
 /**
- * 加载统计数据
+ * 组件挂载时加载数据
  */
-const loadStats = async () => {
+onMounted(async () => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // 模拟数据
-    stats.totalUsers = 1234
-    stats.totalProducts = 567
-    stats.totalOrders = 890
-    stats.totalRevenue = '123,456'
+    // 加载概览数据
+    const overviewResponse = await getRealtimeOverview()
+    if (overviewResponse.code === 200) {
+      Object.assign(stats, overviewResponse.data)
+    }
+
+    // 加载图表数据
+    await Promise.all([loadSalesTrend(), loadOrderStatus()])
   } catch (error) {
-    console.error('加载统计数据失败:', error)
+    console.error('加载数据失败:', error)
   }
-}
+})
 
-/**
- * 数字动画效果
- */
-const animateNumber = (target: number, key: keyof Stats) => {
-  const start = 0
-  const duration = 1000
-  const startTime = Date.now()
-  
-  const animate = () => {
-    const elapsed = Date.now() - startTime
-    const progress = Math.min(elapsed / duration, 1)
-    const current = Math.floor(start + (target - start) * progress)
-    
-    if (key === 'totalRevenue') {
-      stats[key] = current.toLocaleString()
-    } else {
-      (stats as any)[key] = current
-    }
-    
-    if (progress < 1) {
-      requestAnimationFrame(animate)
-    }
-  }
-  
-  animate()
-}
-
-onMounted(() => {
-  loadStats()
-  
-  // 启动数字动画
-  setTimeout(() => {
-    animateNumber(1234, 'totalUsers')
-    animateNumber(567, 'totalProducts')
-    animateNumber(890, 'totalOrders')
-    animateNumber(123456, 'totalRevenue')
-  }, 500)
+// 监听销售周期变化
+watch(salesPeriod, () => {
+  loadSalesTrend()
 })
 </script>
 
@@ -286,17 +320,17 @@ onMounted(() => {
 
 .stats-grid {
   @apply flex flex-wrap gap-6;
-  
+
   > * {
     @apply flex-1 min-w-0;
   }
-  
+
   @media (min-width: 768px) {
     > * {
       @apply min-w-[calc(50%-12px)];
     }
   }
-  
+
   @media (min-width: 1024px) {
     > * {
       @apply min-w-[calc(25%-18px)];
@@ -334,11 +368,11 @@ onMounted(() => {
 
 .charts-grid {
   @apply flex flex-wrap gap-6;
-  
+
   > * {
     @apply flex-1 min-w-0;
   }
-  
+
   @media (min-width: 1024px) {
     > * {
       @apply min-w-[calc(50%-12px)];
@@ -364,34 +398,6 @@ onMounted(() => {
 
 .chart-content {
   @apply p-6;
-}
-
-.chart-placeholder {
-  @apply flex flex-col items-center justify-center h-64;
-}
-
-.order-status-list {
-  @apply space-y-4;
-}
-
-.status-item {
-  @apply flex items-center space-x-3;
-}
-
-.status-indicator {
-  @apply w-3 h-3 rounded-full;
-}
-
-.status-label {
-  @apply flex-1 text-gray-700;
-}
-
-.status-count {
-  @apply font-semibold text-gray-800;
-}
-
-.status-percentage {
-  @apply text-gray-500 text-sm w-12 text-right;
 }
 
 .activity-section {
@@ -433,6 +439,4 @@ onMounted(() => {
 .activity-type {
   @apply flex-shrink-0;
 }
-
-
 </style>

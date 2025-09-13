@@ -389,7 +389,7 @@
       width="600px"
       @ok="handleRoleSubmit"
       @cancel="handleRoleCancel"
-    >
+     ok-text="确定" cancel-text="取消">
       <a-form ref="roleFormRef" :model="roleForm" :rules="roleRules" layout="vertical">
         <a-form-item label="角色名称" name="name">
           <a-input v-model:value="roleForm.name" placeholder="请输入角色名称" />
@@ -431,7 +431,7 @@
       width="800px"
       @ok="handlePermissionSubmit"
       @cancel="handlePermissionCancel"
-    >
+     ok-text="确定" cancel-text="取消">
       <div v-if="currentRole" class="permission-assignment">
         <div class="role-info">
           <a-avatar :style="{ backgroundColor: currentRole.color }">
@@ -472,7 +472,7 @@
       width="600px"
       @ok="handleCreatePermissionSubmit"
       @cancel="handleCreatePermissionCancel"
-    >
+     ok-text="确定" cancel-text="取消">
       <a-form
         ref="permissionFormRef"
         :model="permissionForm"
@@ -547,7 +547,7 @@
       width="600px"
       @ok="handleUserRoleSubmit"
       @cancel="handleUserRoleCancel"
-    >
+     ok-text="确定" cancel-text="取消">
       <div v-if="currentUser" class="user-role-assignment">
         <div class="user-info">
           <a-avatar :src="currentUser.avatar">
@@ -1749,7 +1749,7 @@ onMounted(() => {
 })
 </script>
 
-<style scoped lang="scss">
+<style scoped lang="less">
 .permission-view {
   padding: 24px;
   background: #f5f5f5;

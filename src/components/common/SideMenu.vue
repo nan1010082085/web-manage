@@ -160,7 +160,7 @@
       title="管理常用功能"
       width="600px"
       @ok="saveFavoriteSettings"
-    >
+     ok-text="确定" cancel-text="取消">
       <div class="favorite-manager">
         <div class="manager-section">
           <h4>当前常用功能</h4>

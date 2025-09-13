@@ -397,7 +397,7 @@
       title="联系支持"
       :footer="null"
       width="600px"
-    >
+     ok-text="确定" cancel-text="取消">
       <a-tabs v-model:activeKey="supportActiveTab">
         <a-tab-pane key="ticket" tab="提交工单">
           <a-form
@@ -518,7 +518,7 @@
       :footer="null"
       width="800px"
       class="article-modal"
-    >
+     ok-text="确定" cancel-text="取消">
       <div v-if="currentArticle" class="article-detail">
         <div class="article-meta">
           <a-space>
@@ -556,7 +556,7 @@
       :footer="null"
       width="900px"
       class="video-modal"
-    >
+     ok-text="确定" cancel-text="取消">
       <div v-if="currentVideo" class="video-player">
         <video
           ref="videoPlayer"

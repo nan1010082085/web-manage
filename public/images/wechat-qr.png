@@ -1,0 +1,85 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景 -->
+  <rect width="120" height="120" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+  
+  <!-- 二维码模拟图案 -->
+  <g fill="#000000">
+    <!-- 左上角定位点 -->
+    <rect x="10" y="10" width="21" height="21" fill="none" stroke="#000" stroke-width="1"/>
+    <rect x="12" y="12" width="17" height="17" fill="none" stroke="#000" stroke-width="1"/>
+    <rect x="16" y="16" width="9" height="9"/>
+    
+    <!-- 右上角定位点 -->
+    <rect x="89" y="10" width="21" height="21" fill="none" stroke="#000" stroke-width="1"/>
+    <rect x="91" y="12" width="17" height="17" fill="none" stroke="#000" stroke-width="1"/>
+    <rect x="95" y="16" width="9" height="9"/>
+    
+    <!-- 左下角定位点 -->
+    <rect x="10" y="89" width="21" height="21" fill="none" stroke="#000" stroke-width="1"/>
+    <rect x="12" y="91" width="17" height="17" fill="none" stroke="#000" stroke-width="1"/>
+    <rect x="16" y="95" width="9" height="9"/>
+    
+    <!-- 模拟数据点 -->
+    <rect x="40" y="15" width="3" height="3"/>
+    <rect x="45" y="15" width="3" height="3"/>
+    <rect x="50" y="15" width="3" height="3"/>
+    <rect x="60" y="15" width="3" height="3"/>
+    <rect x="65" y="15" width="3" height="3"/>
+    <rect x="75" y="15" width="3" height="3"/>
+    
+    <rect x="15" y="40" width="3" height="3"/>
+    <rect x="20" y="40" width="3" height="3"/>
+    <rect x="40" y="40" width="3" height="3"/>
+    <rect x="50" y="40" width="3" height="3"/>
+    <rect x="60" y="40" width="3" height="3"/>
+    <rect x="70" y="40" width="3" height="3"/>
+    <rect x="95" y="40" width="3" height="3"/>
+    <rect x="105" y="40" width="3" height="3"/>
+    
+    <rect x="40" y="50" width="3" height="3"/>
+    <rect x="50" y="50" width="3" height="3"/>
+    <rect x="55" y="50" width="3" height="3"/>
+    <rect x="65" y="50" width="3" height="3"/>
+    <rect x="75" y="50" width="3" height="3"/>
+    <rect x="85" y="50" width="3" height="3"/>
+    
+    <rect x="15" y="60" width="3" height="3"/>
+    <rect x="25" y="60" width="3" height="3"/>
+    <rect x="45" y="60" width="3" height="3"/>
+    <rect x="55" y="60" width="3" height="3"/>
+    <rect x="70" y="60" width="3" height="3"/>
+    <rect x="80" y="60" width="3" height="3"/>
+    <rect x="95" y="60" width="3" height="3"/>
+    
+    <rect x="40" y="70" width="3" height="3"/>
+    <rect x="50" y="70" width="3" height="3"/>
+    <rect x="60" y="70" width="3" height="3"/>
+    <rect x="75" y="70" width="3" height="3"/>
+    <rect x="85" y="70" width="3" height="3"/>
+    <rect x="100" y="70" width="3" height="3"/>
+    
+    <rect x="15" y="80" width="3" height="3"/>
+    <rect x="40" y="80" width="3" height="3"/>
+    <rect x="55" y="80" width="3" height="3"/>
+    <rect x="65" y="80" width="3" height="3"/>
+    <rect x="80" y="80" width="3" height="3"/>
+    <rect x="90" y="80" width="3" height="3"/>
+    <rect x="105" y="80" width="3" height="3"/>
+    
+    <rect x="40" y="95" width="3" height="3"/>
+    <rect x="50" y="95" width="3" height="3"/>
+    <rect x="60" y="95" width="3" height="3"/>
+    <rect x="70" y="95" width="3" height="3"/>
+    <rect x="85" y="95" width="3" height="3"/>
+    <rect x="95" y="95" width="3" height="3"/>
+    <rect x="105" y="95" width="3" height="3"/>
+  </g>
+  
+  <!-- 微信图标 -->
+  <g transform="translate(45, 45)">
+    <circle cx="15" cy="15" r="12" fill="#07c160" opacity="0.8"/>
+    <path d="M10 12 Q15 8 20 12 Q18 16 15 15 Q12 16 10 12 Z" fill="white"/>
+    <circle cx="12" cy="13" r="1" fill="#07c160"/>
+    <circle cx="18" cy="13" r="1" fill="#07c160"/>
+  </g>
+</svg>

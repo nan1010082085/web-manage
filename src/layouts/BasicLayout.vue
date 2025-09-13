@@ -254,7 +254,7 @@ onUnmounted(() => {
   overflow-y: auto;
   overflow-x: hidden;
   background: #f0f2f5;
-  padding: 24px;
+  padding: 0;
 
   /* 自定义滚动条样式 */
   &::-webkit-scrollbar {

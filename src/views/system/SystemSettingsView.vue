@@ -776,7 +776,7 @@ onMounted(() => {
 }
 
 .settings-form {
-  max-width: @container-max-width;
+  max-width: @container-lg;
 }
 
 .logo-uploader {

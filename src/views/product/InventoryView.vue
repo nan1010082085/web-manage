@@ -235,7 +235,7 @@
       width="600px"
       @ok="handleAdjustSubmit"
       @cancel="handleAdjustCancel"
-    >
+     ok-text="确定" cancel-text="取消">
       <a-form ref="adjustFormRef" :model="adjustForm" :rules="adjustRules" layout="vertical">
         <div class="adjust-product-info">
           <a-avatar :src="adjustingProduct?.image" size="large" shape="square" />
@@ -300,7 +300,7 @@
       width="800px"
       @ok="handleBatchSubmit"
       @cancel="showBatchModal = false"
-    >
+     ok-text="确定" cancel-text="取消">
       <div class="batch-info">
         <a-alert
           :message="`已选择 ${selectedRowKeys.length} 个商品进行批量调整`"
@@ -354,7 +354,7 @@
     </a-modal>
 
     <!-- 变更记录弹窗 -->
-    <a-modal v-model:open="showHistoryModal" title="库存变更记录" width="900px" :footer="null">
+    <a-modal v-model:open="showHistoryModal" title="库存变更记录" width="900px" :footer="null" ok-text="确定" cancel-text="取消">
       <a-table
         :columns="historyColumns"
         :data-source="historyData"

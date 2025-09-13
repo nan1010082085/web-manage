@@ -95,7 +95,7 @@
       title="系统性能监控"
       width="600px"
       :footer="null"
-    >
+     ok-text="确定" cancel-text="取消">
       <div class="performance-details">
         <div class="metric-item">
           <span class="metric-label">CPU使用率</span>

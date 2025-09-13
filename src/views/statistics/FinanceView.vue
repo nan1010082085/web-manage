@@ -128,14 +128,14 @@
                 <a-radio-button value="month">月</a-radio-button>
               </a-radio-group>
             </template>
-            <div ref="trendChartRef" class="chart-container"></div>
+            <HighChart :options="financeChartConfigs.trendChart" height="300px" />
           </a-card>
         </a-col>
         
         <!-- 收入构成饼图 -->
         <a-col :span="8">
           <a-card title="收入构成" class="chart-card">
-            <div ref="revenueChartRef" class="chart-container"></div>
+            <HighChart :options="financeChartConfigs.revenueChart" height="300px" />
           </a-card>
         </a-col>
       </a-row>
@@ -144,14 +144,14 @@
         <!-- 支出分类 -->
         <a-col :span="8">
           <a-card title="支出分类" class="chart-card">
-            <div ref="expenseChartRef" class="chart-container"></div>
+            <HighChart :options="financeChartConfigs.expenseChart" height="250px" />
           </a-card>
         </a-col>
         
         <!-- 现金流分析 -->
         <a-col :span="16">
           <a-card title="现金流分析" class="chart-card">
-            <div ref="cashflowChartRef" class="chart-container"></div>
+            <HighChart :options="financeChartConfigs.cashflowChart" height="250px" />
           </a-card>
         </a-col>
       </a-row>
@@ -305,7 +305,7 @@
       title="财务记录详情"
       :footer="null"
       width="600px"
-    >
+     ok-text="确定" cancel-text="取消">
       <div class="detail-content" v-if="selectedRecord">
         <a-descriptions :column="2" bordered>
           <a-descriptions-item label="交易ID">{{ selectedRecord.id }}</a-descriptions-item>
@@ -348,6 +348,8 @@ import {
 import type { TableColumnsType, TableProps } from 'ant-design-vue'
 import { debounce } from 'lodash-es'
 import dayjs, { type Dayjs } from 'dayjs'
+import HighChart from '@/components/common/HighChart.vue'
+import { financeChartConfigs } from '@/config/charts/chartConfigs'
 
 /**
  * 财务统计页面
@@ -404,11 +406,7 @@ const categoryFilter = ref<string | undefined>(undefined)
 const financeData = ref<FinanceItem[]>([])
 const selectedRecord = ref<FinanceItem | null>(null)
 
-// 图表引用
-const trendChartRef = ref<HTMLDivElement>()
-const revenueChartRef = ref<HTMLDivElement>()
-const expenseChartRef = ref<HTMLDivElement>()
-const cashflowChartRef = ref<HTMLDivElement>()
+// 图表引用已移除，使用 HighChart 组件
 
 // 财务概览数据
 const overview = ref<FinanceOverview>({
@@ -647,9 +645,7 @@ const loadFinanceData = async (): Promise<void> => {
     financeData.value = mockData
     pagination.total = mockData.length
     
-    // 渲染图表
-    await nextTick()
-    renderCharts()
+    // 图表已通过HighChart组件自动渲染
   } catch (__error) {
     message.error('加载财务数据失败')
   } finally {
@@ -661,24 +657,7 @@ const loadFinanceData = async (): Promise<void> => {
  * 渲染图表
  */
 const renderCharts = (): void => {
-  // 这里应该使用实际的图表库如 ECharts 或 Chart.js
-  // 为了演示，我们只是创建占位符
-  
-  if (trendChartRef.value) {
-    trendChartRef.value.innerHTML = '<div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">收支趋势图表占位符</div>'
-  }
-  
-  if (revenueChartRef.value) {
-    revenueChartRef.value.innerHTML = '<div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">收入构成图表占位符</div>'
-  }
-  
-  if (expenseChartRef.value) {
-    expenseChartRef.value.innerHTML = '<div style="height: 250px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">支出分类图表占位符</div>'
-  }
-  
-  if (cashflowChartRef.value) {
-    cashflowChartRef.value.innerHTML = '<div style="height: 250px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">现金流图表占位符</div>'
-  }
+  // 图表已通过 HighChart 组件渲染，无需手动处理
 }
 
 /**
@@ -702,7 +681,7 @@ const handleReportTypeChange = (): void => {
  * 处理趋势周期变化
  */
 const handleTrendPeriodChange = (): void => {
-  renderCharts()
+  // 图表会自动响应数据变化
 }
 
 /**

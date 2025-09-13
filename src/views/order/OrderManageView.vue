@@ -298,7 +298,7 @@
       :footer="null"
       width="800px"
       :body-style="{ maxHeight: '70vh', overflow: 'auto' }"
-    >
+     ok-text="确定" cancel-text="取消">
       <div v-if="currentOrder">
         <!-- 订单基本信息 -->
         <div class="mb-6">
@@ -374,6 +374,8 @@
       :confirm-loading="shipModalLoading"
       @ok="handleShipModalOk"
       @cancel="shipModalVisible = false"
+      ok-text="确认发货"
+      cancel-text="取消"
       width="500px"
     >
       <a-form layout="vertical">

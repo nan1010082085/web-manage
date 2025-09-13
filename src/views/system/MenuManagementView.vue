@@ -125,7 +125,7 @@
       width="700px"
       @ok="handleSubmit"
       @cancel="handleCancel"
-    >
+     ok-text="确定" cancel-text="取消">
       <a-form
         ref="formRef"
         :model="formData"
@@ -243,7 +243,7 @@
       width="800px"
       @ok="handleIconSelect"
       @cancel="iconSelectorVisible = false"
-    >
+     ok-text="确定" cancel-text="取消">
       <div class="icon-selector">
         <a-row :gutter="[16, 16]">
           <a-col 

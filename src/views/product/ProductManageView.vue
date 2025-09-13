@@ -247,6 +247,8 @@
       :confirm-loading="modalLoading"
       @ok="handleModalOk"
       @cancel="handleModalCancel"
+      ok-text="保存"
+      cancel-text="取消"
       width="800px"
       :body-style="{ maxHeight: '70vh', overflow: 'auto' }"
     >
@@ -360,6 +362,8 @@
       :confirm-loading="stockModalLoading"
       @ok="handleStockModalOk"
       @cancel="stockModalVisible = false"
+      ok-text="确定"
+      cancel-text="取消"
       width="500px"
     >
       <div class="mb-4">

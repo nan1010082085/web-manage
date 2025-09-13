@@ -91,7 +91,7 @@
       <a-row :gutter="16">
         <a-col :span="12">
           <a-card title="日志级别分布" class="chart-card">
-            <div ref="levelChartRef" class="chart-container"></div>
+            <HighChart :options="logChartConfigs.levelChart" :height="'300px'" />
           </a-card>
         </a-col>
         <a-col :span="12">
@@ -103,7 +103,7 @@
                 <a-radio-button value="week">周</a-radio-button>
               </a-radio-group>
             </template>
-            <div ref="trendChartRef" class="chart-container"></div>
+            <HighChart :options="logChartConfigs.trendChart" :height="'300px'" />
           </a-card>
         </a-col>
       </a-row>
@@ -287,7 +287,7 @@
       :footer="null"
       width="800px"
       :body-style="{ maxHeight: '600px', overflow: 'auto' }"
-    >
+     ok-text="确定" cancel-text="取消">
       <div class="log-detail" v-if="selectedLog">
         <a-descriptions :column="2" bordered>
           <a-descriptions-item label="日志ID">{{ selectedLog.id }}</a-descriptions-item>
@@ -326,7 +326,7 @@
       :footer="null"
       width="900px"
       :body-style="{ maxHeight: '600px', overflow: 'auto' }"
-    >
+     ok-text="确定" cancel-text="取消">
       <pre class="stack-trace-content" v-if="selectedStackTrace">{{ selectedStackTrace }}</pre>
     </a-modal>
   </div>
@@ -345,7 +345,10 @@ import {
   PlusOutlined,
   SearchOutlined,
   UserOutlined,
+  FilterOutlined,
 } from '@ant-design/icons-vue'
+import HighChart from '@/components/common/HighChart.vue'
+import { logChartConfigs } from '@/config/charts/chartConfigs'
 import type { TableColumnsType, TableProps } from 'ant-design-vue'
 import { pickBy, isEmpty, isNil, truncate, trim, isString } from 'lodash-es'
 
@@ -415,9 +418,7 @@ const selectedLog = ref<LogItem | null>(null)
 const selectedStackTrace = ref<string>('')
 const refreshTimer = ref<NodeJS.Timeout | null>(null)
 
-// 图表引用
-const levelChartRef = ref<HTMLDivElement>()
-const trendChartRef = ref<HTMLDivElement>()
+// 图表引用已移除，使用 HighChart 组件
 
 // 搜索表单
 const searchForm = reactive<SearchForm>({
@@ -614,9 +615,7 @@ const loadLogData = async (): Promise<void> => {
     logData.value = mockData
     pagination.total = mockData.length
     
-    // 渲染图表
-    await nextTick()
-    renderCharts()
+    // 图表已通过HighChart组件自动渲染
   } catch (__error) {
     message.error('加载日志数据失败')
   } finally {
@@ -628,16 +627,7 @@ const loadLogData = async (): Promise<void> => {
  * 渲染图表
  */
 const renderCharts = (): void => {
-  // 这里应该使用实际的图表库如 ECharts 或 Chart.js
-  // 为了演示，我们只是创建占位符
-  
-  if (levelChartRef.value) {
-    levelChartRef.value.innerHTML = '<div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">日志级别分布图表占位符</div>'
-  }
-  
-  if (trendChartRef.value) {
-    trendChartRef.value.innerHTML = '<div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">日志趋势图表占位符</div>'
-  }
+  // 图表已通过 HighChart 组件渲染，无需手动处理
 }
 
 /**
@@ -654,7 +644,7 @@ const handleDateChange = (dates: [Dayjs, Dayjs] | null): void => {
  * 处理趋势周期变化
  */
 const handleTrendPeriodChange = (): void => {
-  renderCharts()
+  // 图表会自动响应数据变化
 }
 
 /**

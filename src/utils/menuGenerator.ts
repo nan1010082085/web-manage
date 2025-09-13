@@ -116,10 +116,10 @@ const titleMap: Record<string, string> = {
   DashboardView: '仪表盘',
   UserListView: '用户列表',
   UserProfileView: '用户详情',
-  ProductManage: '商品列表',
+  ProductManageView: '商品列表',
   CategoryView: '商品分类',
   InventoryView: '库存管理',
-  OrderManage: '订单管理',
+  OrderManageView: '订单管理',
   CampaignView: '营销活动',
   CouponView: '优惠券管理',
   SalesView: '销售统计',
@@ -138,7 +138,7 @@ const titleMap: Record<string, string> = {
   MonitorView: '系统监控',
   MenuManagementView: '菜单管理',
   RoleManagementView: '角色管理',
-  UserManage: '用户管理',
+  UserManageView: '用户管理',
   LoginView: '登录',
   NotFoundView: '页面不存在',
 }
@@ -252,9 +252,9 @@ const generatePath = (directory: string, fileName?: string): string => {
 
   // 特殊处理一些文件名
   const fileNameMap: Record<string, string> = {
-    'ProductManage.vue': 'list',
-    'OrderManage.vue': 'list',
-    'UserManage.vue': 'list',
+    'ProductManageView.vue': 'list',
+    'OrderManageView.vue': 'list',
+    'UserManageView.vue': 'list',
     'DashboardView.vue': '',
     'LoginView.vue': '',
     'NotFoundView.vue': '',
@@ -289,7 +289,6 @@ export const generateMenuFromViews = (viewsStructure: any): MenuGroup[] => {
       if (!viewsStructure[directory]) return
 
       const files = viewsStructure[directory]
-
       if (files.length === 1) {
         // 单个文件，直接作为菜单项
         const fileName = files[0]
@@ -345,9 +344,9 @@ export const getViewsStructure = async (): Promise<Record<string, string[]>> => 
     error: ['NotFoundView.vue'],
     help: ['HelpView.vue'],
     marketing: ['CampaignView.vue', 'CouponView.vue'],
-    order: ['OrderManage.vue'],
+    order: ['OrderManageView.vue'],
     permission: ['PermissionView.vue'],
-    product: ['ProductManage.vue', 'CategoryView.vue', 'InventoryView.vue'],
+    product: ['ProductManageView.vue', 'CategoryView.vue', 'InventoryView.vue'],
     profile: ['ProfileView.vue'],
     service: ['CustomerServiceView.vue'],
     statistics: ['SalesView.vue', 'UserView.vue', 'FinanceView.vue'],
@@ -358,7 +357,7 @@ export const getViewsStructure = async (): Promise<Record<string, string[]>> => 
       'MonitorView.vue',
       'MenuManagementView.vue',
       'RoleManagementView.vue',
-      'UserManage.vue',
+      'UserManageView.vue',
     ],
     user: ['UserListView.vue', 'UserProfileView.vue'],
   }

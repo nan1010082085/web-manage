@@ -126,7 +126,7 @@
       width="600px"
       @ok="handleSubmit"
       @cancel="handleCancel"
-    >
+     ok-text="确定" cancel-text="取消">
       <a-form
         ref="formRef"
         :model="formData"
@@ -178,7 +178,7 @@
       width="800px"
       @ok="handlePermissionSubmit"
       @cancel="handlePermissionCancel"
-    >
+     ok-text="保存" cancel-text="取消">
       <div v-if="currentRole">
         <h4>{{ currentRole.name }} - 权限配置</h4>
         <a-tree
@@ -188,7 +188,7 @@
           :default-expand-all="true"
           :check-strictly="false"
         >
-          <template #title="{ title, key }">
+          <template #title="{ title }">
             <span>{{ title }}</span>
           </template>
         </a-tree>

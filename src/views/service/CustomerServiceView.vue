@@ -328,7 +328,7 @@
       width="800px"
       @ok="handleSubmit"
       @cancel="handleCancel"
-    >
+     ok-text="确定" cancel-text="取消">
       <a-form
         ref="formRef"
         :model="formData"
@@ -418,7 +418,7 @@
       title="工单详情"
       :footer="null"
       width="1000px"
-    >
+     ok-text="确定" cancel-text="取消">
       <div class="ticket-detail" v-if="selectedTicket">
         <!-- 工单基本信息 -->
         <a-card title="基本信息" size="small" class="detail-card">
@@ -515,7 +515,7 @@
       title="回复工单"
       @ok="handleReply"
       @cancel="replyModalVisible = false"
-    >
+     ok-text="确定" cancel-text="取消">
       <a-form layout="vertical">
         <a-form-item label="回复内容">
           <a-textarea

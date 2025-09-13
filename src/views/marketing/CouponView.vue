@@ -281,7 +281,7 @@
       width="800px"
       @ok="handleSubmit"
       @cancel="handleCancel"
-    >
+     ok-text="确定" cancel-text="取消">
       <a-form
         ref="formRef"
         :model="formData"
@@ -428,7 +428,7 @@
       title="优惠券详情"
       :footer="null"
       width="900px"
-    >
+     ok-text="确定" cancel-text="取消">
       <div class="coupon-detail" v-if="selectedCoupon">
         <a-descriptions :column="2" bordered>
           <a-descriptions-item label="优惠券名称">{{ selectedCoupon.name }}</a-descriptions-item>
@@ -470,12 +470,12 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-card title="使用趋势" size="small">
-                <div ref="usageChartRef" class="chart-container"></div>
+                <HighChart :options="couponChartConfigs.usageTrend" :height="'200px'" />
               </a-card>
             </a-col>
             <a-col :span="12">
               <a-card title="用户分布" size="small">
-                <div ref="userChartRef" class="chart-container"></div>
+                <HighChart :options="couponChartConfigs.userDistribution" :height="'200px'" />
               </a-card>
             </a-col>
           </a-row>
@@ -489,7 +489,7 @@
       title="批量发放优惠券"
       @ok="handleBatchIssue"
       @cancel="issueModalVisible = false"
-    >
+     ok-text="确定" cancel-text="取消">
       <a-form layout="vertical">
         <a-form-item label="发放方式">
           <a-radio-group v-model:value="issueForm.method">
@@ -543,6 +543,8 @@ import {
   CheckCircleOutlined,
   RiseOutlined,
 } from '@ant-design/icons-vue'
+import HighChart from '@/components/common/HighChart.vue'
+import { couponChartConfigs } from '@/config/charts/chartConfigs'
 import type { TableColumnsType, TableProps, UploadFile } from 'ant-design-vue'
 import { debounce } from 'lodash-es'
 import dayjs, { type Dayjs } from 'dayjs'
@@ -620,9 +622,7 @@ const selectedCoupon = ref<Coupon | null>(null)
 const editingCoupon = ref<Coupon | null>(null)
 const formRef = ref()
 
-// 图表引用
-const usageChartRef = ref<HTMLDivElement>()
-const userChartRef = ref<HTMLDivElement>()
+// 图表引用已移除，使用HighChart组件
 
 // 搜索表单
 const searchForm = reactive<SearchForm>({
@@ -936,16 +936,7 @@ const loadCouponData = async (): Promise<void> => {
  * 渲染图表
  */
 const renderCharts = (): void => {
-  // 这里应该使用实际的图表库如 ECharts 或 Chart.js
-  // 为了演示，我们只是创建占位符
-  
-  if (usageChartRef.value) {
-    usageChartRef.value.innerHTML = '<div style="height: 200px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">使用趋势图表占位符</div>'
-  }
-  
-  if (userChartRef.value) {
-    userChartRef.value.innerHTML = '<div style="height: 200px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">用户分布图表占位符</div>'
-  }
+  // 图表已通过HighChart组件渲染，无需手动处理
 }
 
 /**
@@ -1033,9 +1024,8 @@ const viewDetail = async (record: Coupon): Promise<void> => {
   selectedCoupon.value = record
   detailModalVisible.value = true
   
-  // 渲染图表
+  // 图表通过HighChart组件自动渲染
   await nextTick()
-  renderCharts()
 }
 
 /**

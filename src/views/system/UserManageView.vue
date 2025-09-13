@@ -155,6 +155,8 @@
       :confirm-loading="modalLoading"
       @ok="handleModalOk"
       @cancel="handleModalCancel"
+      ok-text="保存"
+      cancel-text="取消"
       width="600px"
     >
       <a-form ref="formRef" :model="formData" :rules="formRules" layout="vertical">
@@ -215,7 +217,7 @@ import {
   StopOutlined,
   PlayCircleOutlined,
 } from '@ant-design/icons-vue'
-import type { TableColumnsType, FormInstance } from 'ant-design-vue'
+import type { TableColumnsType, FormInstance, TablePaginationConfig } from 'ant-design-vue'
 import type { UserInfo } from '@/types'
 
 /**
@@ -443,8 +445,8 @@ const resetSearch = () => {
  * 表格变化处理
  */
 const handleTableChange = (pag: TablePaginationConfig) => {
-  pagination.current = pag.current
-  pagination.pageSize = pag.pageSize
+  pagination.current = pag.current as number
+  pagination.pageSize = pag.pageSize as number
   loadUserList()
 }
 

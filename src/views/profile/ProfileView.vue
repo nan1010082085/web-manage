@@ -557,7 +557,7 @@
       title="删除账户"
       :confirm-loading="deleteAccountLoading"
       @ok="deleteAccount"
-    >
+     ok-text="删除" cancel-text="取消">
       <a-alert
         message="警告"
         description="删除账户是不可逆操作，将永久删除您的所有数据。请谨慎操作。"

@@ -400,7 +400,7 @@
       width="800px"
       @ok="handleCreateSubmit"
       @cancel="handleCreateCancel"
-    >
+     ok-text="确定" cancel-text="取消">
       <a-form
         ref="createFormRef"
         :model="createForm"
@@ -486,7 +486,7 @@
       title="报表详情"
       width="1000px"
       :footer="null"
-    >
+     ok-text="确定" cancel-text="取消">
       <div v-if="currentReport" class="report-detail">
         <a-descriptions :column="2" bordered>
           <a-descriptions-item label="报表名称">
@@ -549,7 +549,7 @@
       title="共享设置"
       @ok="handleShareSubmit"
       @cancel="handleShareCancel"
-    >
+     ok-text="保存" cancel-text="取消">
       <a-form :model="shareForm" layout="vertical">
         <a-form-item label="共享范围">
           <a-radio-group v-model:value="shareForm.scope">

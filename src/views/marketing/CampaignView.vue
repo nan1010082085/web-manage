@@ -266,7 +266,7 @@
       width="800px"
       @ok="handleSubmit"
       @cancel="handleCancel"
-    >
+     ok-text="确定" cancel-text="取消">
       <a-form ref="formRef" :model="formData" :rules="formRules" layout="vertical">
         <a-row :gutter="16">
           <a-col :span="12">
@@ -361,7 +361,7 @@
     </a-modal>
 
     <!-- 活动详情弹窗 -->
-    <a-modal v-model:open="detailModalVisible" title="活动详情" :footer="null" width="900px">
+    <a-modal v-model:open="detailModalVisible" title="活动详情" :footer="null" width="900px" ok-text="确定" cancel-text="取消">
       <div class="campaign-detail" v-if="selectedCampaign">
         <a-descriptions :column="2" bordered>
           <a-descriptions-item label="活动名称">{{ selectedCampaign.name }}</a-descriptions-item>
@@ -413,12 +413,12 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <a-card title="参与趋势" size="small">
-                <div ref="participantChartRef" class="chart-container"></div>
+                <HighChart :options="campaignChartConfigs.participantTrend" :height="'200px'" />
               </a-card>
             </a-col>
             <a-col :span="12">
               <a-card title="转化分析" size="small">
-                <div ref="conversionChartRef" class="chart-container"></div>
+                <HighChart :options="campaignChartConfigs.conversionAnalysis" :height="'200px'" />
               </a-card>
             </a-col>
           </a-row>
@@ -446,6 +446,8 @@ import {
   RiseOutlined,
 } from '@ant-design/icons-vue'
 import type { TableColumnsType, TableProps, UploadFile } from 'ant-design-vue'
+import HighChart from '@/components/common/HighChart.vue'
+import { campaignChartConfigs } from '@/config/charts/chartConfigs'
 
 import dayjs, { type Dayjs } from 'dayjs'
 
@@ -509,9 +511,7 @@ const editingCampaign = ref<Campaign | null>(null)
 const fileList = ref<UploadFile[]>([])
 const formRef = ref()
 
-// 图表引用
-const participantChartRef = ref<HTMLDivElement>()
-const conversionChartRef = ref<HTMLDivElement>()
+// 图表引用已移除，使用HighChart组件
 
 // 搜索表单
 const searchForm = reactive<SearchForm>({
@@ -798,19 +798,8 @@ const loadCampaignData = async (): Promise<void> => {
  * 渲染图表
  */
 const renderCharts = (): void => {
-  // 这里应该使用实际的图表库如 ECharts 或 Chart.js
-  // 为了演示，我们只是创建占位符
-
-  if (participantChartRef.value) {
-    participantChartRef.value.innerHTML =
-      '<div style="height: 200px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">参与趋势图表占位符</div>'
+    // 图表已通过HighChart组件渲染，无需手动更新
   }
-
-  if (conversionChartRef.value) {
-    conversionChartRef.value.innerHTML =
-      '<div style="height: 200px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">转化分析图表占位符</div>'
-  }
-}
 
 /**
  * 搜索处理
@@ -893,9 +882,7 @@ const viewDetail = async (record: Campaign): Promise<void> => {
   selectedCampaign.value = record
   detailModalVisible.value = true
 
-  // 渲染图表
-  await nextTick()
-  renderCharts()
+  // 图表已通过HighChart组件自动渲染
 }
 
 /**

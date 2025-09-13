@@ -116,14 +116,14 @@
                 <a-radio-button value="month">月</a-radio-button>
               </a-radio-group>
             </template>
-            <div ref="trendChartRef" class="chart-container"></div>
+            <HighChart :options="salesChartConfigs.trendChart" height="300px" />
           </a-card>
         </a-col>
         
         <!-- 销售渠道分布 -->
         <a-col :span="8">
           <a-card title="销售渠道" class="chart-card">
-            <div ref="channelChartRef" class="chart-container"></div>
+            <HighChart :options="salesChartConfigs.channelChart" height="300px" />
           </a-card>
         </a-col>
       </a-row>
@@ -139,14 +139,14 @@
                 <a-select-option value="profit">利润</a-select-option>
               </a-select>
             </template>
-            <div ref="rankingChartRef" class="chart-container"></div>
+            <HighChart :options="salesChartConfigs.rankingChart" height="300px" />
           </a-card>
         </a-col>
         
         <!-- 地区销售分布 -->
         <a-col :span="12">
           <a-card title="地区销售分布" class="chart-card">
-            <div ref="regionChartRef" class="chart-container"></div>
+            <HighChart :options="salesChartConfigs.regionChart" height="300px" />
           </a-card>
         </a-col>
       </a-row>
@@ -257,6 +257,8 @@ import {
 import type { TableColumnsType, TableProps } from 'ant-design-vue'
 import { debounce } from 'lodash-es'
 import dayjs, { type Dayjs } from 'dayjs'
+import HighChart from '@/components/common/HighChart.vue'
+import { salesChartConfigs } from '@/config/charts/chartConfigs'
 
 /**
  * 销售统计页面
@@ -296,11 +298,7 @@ const searchKeyword = ref('')
 const categoryFilter = ref<string | undefined>(undefined)
 const salesData = ref<SalesItem[]>([])
 
-// 图表引用
-const trendChartRef = ref<HTMLDivElement>()
-const channelChartRef = ref<HTMLDivElement>()
-const rankingChartRef = ref<HTMLDivElement>()
-const regionChartRef = ref<HTMLDivElement>()
+// 图表引用已移除，使用 HighChart 组件
 
 // 核心指标
 const metrics = ref<SalesMetrics>({
@@ -450,9 +448,7 @@ const loadSalesData = async (): Promise<void> => {
     salesData.value = mockData
     pagination.total = mockData.length
     
-    // 渲染图表
-    await nextTick()
-    renderCharts()
+    // 图表已通过HighChart组件自动渲染
   } catch (__error) {
     message.error('加载销售数据失败')
   } finally {
@@ -464,24 +460,7 @@ const loadSalesData = async (): Promise<void> => {
  * 渲染图表
  */
 const renderCharts = (): void => {
-  // 这里应该使用实际的图表库如 ECharts 或 Chart.js
-  // 为了演示，我们只是创建占位符
-  
-  if (trendChartRef.value) {
-    trendChartRef.value.innerHTML = '<div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">销售趋势图表占位符</div>'
-  }
-  
-  if (channelChartRef.value) {
-    channelChartRef.value.innerHTML = '<div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">渠道分布图表占位符</div>'
-  }
-  
-  if (rankingChartRef.value) {
-    rankingChartRef.value.innerHTML = '<div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">商品排行图表占位符</div>'
-  }
-  
-  if (regionChartRef.value) {
-    regionChartRef.value.innerHTML = '<div style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 4px;">地区分布图表占位符</div>'
-  }
+  // 图表已通过 HighChart 组件渲染，无需手动处理
 }
 
 /**
@@ -498,14 +477,14 @@ const handleDateChange = (dates: [Dayjs, Dayjs] | null): void => {
  * 处理趋势周期变化
  */
 const handleTrendPeriodChange = (): void => {
-  renderCharts()
+  // 图表会自动响应数据变化
 }
 
 /**
  * 处理排行类型变化
  */
 const handleRankingTypeChange = (): void => {
-  renderCharts()
+  // 图表会自动响应数据变化
 }
 
 /**

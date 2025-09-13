@@ -140,7 +140,7 @@
       width="600px"
       @ok="handleSubmit"
       @cancel="handleCancel"
-    >
+     ok-text="确定" cancel-text="取消">
       <a-form ref="formRef" :model="formData" :rules="formRules" layout="vertical">
         <a-row :gutter="16">
           <a-col :span="12">
