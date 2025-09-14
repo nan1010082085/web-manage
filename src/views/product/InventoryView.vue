@@ -397,6 +397,10 @@ import {
 } from '@ant-design/icons-vue'
 import type { TableColumnsType, FormInstance, TableProps } from 'ant-design-vue'
 import { debounce } from 'lodash-es'
+import {
+  getProductList,
+  updateProductStock,
+} from '@/api/product'
 
 /**
  * 库存管理页面
@@ -730,67 +734,44 @@ const getAdjustPreviewText = (): string => {
 const loadInventoryData = async (): Promise<void> => {
   loading.value = true
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // 模拟数据
-    const mockData: InventoryItem[] = [
-      {
-        id: '1',
-        name: 'iPhone 15 Pro Max',
-        sku: 'IP15PM001',
-        category: '手机通讯',
-        image: '',
-        stock: 45,
-        minStock: 20,
-        maxStock: 200,
-        costPrice: 8000,
-        sellPrice: 9999,
-        warehouse: '主仓库',
-        lastUpdate: '2024-01-15 14:30:00',
-        updateType: '销售出库',
-      },
-      {
-        id: '2',
-        name: 'MacBook Pro 16"',
-        sku: 'MBP16001',
-        category: '电脑办公',
-        stock: 8,
-        minStock: 10,
-        maxStock: 50,
-        costPrice: 15000,
-        sellPrice: 18999,
-        warehouse: '主仓库',
-        lastUpdate: '2024-01-15 10:20:00',
-        updateType: '采购入库',
-      },
-      {
-        id: '3',
-        name: 'AirPods Pro 2',
-        sku: 'APP2001',
-        category: '数码配件',
-        stock: 0,
-        minStock: 15,
-        maxStock: 100,
-        costPrice: 1200,
-        sellPrice: 1899,
-        warehouse: '主仓库',
-        lastUpdate: '2024-01-14 16:45:00',
-        updateType: '销售出库',
-      },
-    ]
-
-    inventoryData.value = mockData
-    pagination.total = mockData.length
-
-    // 计算统计数据
-    stats.value = {
-      totalProducts: mockData.length,
-      lowStock: mockData.filter((item) => item.stock <= item.minStock).length,
-      normalStock: mockData.filter((item) => item.stock > item.minStock).length,
-      totalValue: mockData.reduce((sum, item) => sum + item.stock * item.costPrice, 0),
+    const response = await getProductList({
+      page: pagination.current,
+      pageSize: pagination.pageSize,
+      ...searchForm
+    })
+    
+    if (response.code === 200) {
+      // 转换产品数据为库存数据格式
+      inventoryData.value = response.data.list.map((product: any) => ({
+        id: product.id,
+        name: product.name,
+        sku: product.sku,
+        category: product.category,
+        image: product.image,
+        stock: product.stock || 0,
+        minStock: product.minStock || 10,
+        maxStock: product.maxStock || 100,
+        costPrice: product.costPrice || 0,
+        sellPrice: product.sellPrice || 0,
+        warehouse: product.warehouse || '主仓库',
+        lastUpdate: product.lastUpdate || new Date().toISOString(),
+        updateType: product.updateType || '系统同步',
+      }))
+      
+      pagination.total = response.data.total
+      
+      // 计算统计数据
+      stats.value = {
+        totalProducts: inventoryData.value.length,
+        lowStock: inventoryData.value.filter((item) => item.stock <= item.minStock).length,
+        normalStock: inventoryData.value.filter((item) => item.stock > item.minStock).length,
+        totalValue: inventoryData.value.reduce((sum, item) => sum + item.stock * item.costPrice, 0),
+      }
+    } else {
+      message.error(response.message || '获取库存数据失败')
     }
   } catch (error) {
+    console.error('加载库存数据失败:', error)
     message.error('加载库存数据失败')
   } finally {
     loading.value = false
@@ -862,14 +843,42 @@ const handleAdjustSubmit = async (): Promise<void> => {
   try {
     await adjustFormRef.value?.validate()
 
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    if (!adjustingProduct.value) {
+      message.error('调整商品信息丢失')
+      return
+    }
 
-    message.success('库存调整成功')
-    showAdjustModal.value = false
-    loadInventoryData()
+    // 计算调整后的库存
+    let adjustedStock = 0
+    const currentStock = adjustingProduct.value.stock
+    
+    switch (adjustForm.type) {
+      case 'in':
+        adjustedStock = currentStock + adjustForm.quantity
+        break
+      case 'out':
+        adjustedStock = currentStock - adjustForm.quantity
+        break
+      case 'set':
+        adjustedStock = adjustForm.quantity
+        break
+    }
+
+    const response = await updateProductStock(
+      adjustingProduct.value.id,
+      adjustedStock
+    )
+
+    if (response.code === 200) {
+      message.success('库存调整成功')
+      showAdjustModal.value = false
+      loadInventoryData()
+    } else {
+      message.error(response.message || '库存调整失败')
+    }
   } catch (error) {
     console.error('调整失败:', error)
+    message.error('库存调整失败')
   }
 }
 
@@ -894,15 +903,38 @@ const handleBatchSubmit = async (): Promise<void> => {
   try {
     await batchFormRef.value?.validate()
 
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    message.success(`成功调整 ${selectedRowKeys.value.length} 个商品的库存`)
+    // 批量调用库存更新接口
+    const updatePromises = selectedRowKeys.value.map(async (id) => {
+      const item = inventoryData.value.find(item => item.id === id)
+      if (!item) return null
+      
+      let adjustedStock = 0
+      if (batchForm.type === 'in') {
+        adjustedStock = item.stock + batchForm.value
+      } else if (batchForm.type === 'out') {
+        adjustedStock = Math.max(0, item.stock - batchForm.value)
+      } else if (batchForm.type === 'percent') {
+        adjustedStock = Math.round(item.stock * (1 + batchForm.value / 100))
+      }
+      
+      return updateProductStock(id, adjustedStock)
+    })
+    
+    const results = await Promise.all(updatePromises)
+    const successCount = results.filter(result => result?.code === 200).length
+    
+    if (successCount === selectedRowKeys.value.length) {
+      message.success(`批量调整成功，共调整 ${successCount} 个商品`)
+    } else {
+      message.warning(`部分调整成功，成功 ${successCount}/${selectedRowKeys.value.length} 个商品`)
+    }
+    
     showBatchModal.value = false
     selectedRowKeys.value = []
     loadInventoryData()
   } catch (error) {
     console.error('批量调整失败:', error)
+    message.error('批量调整失败')
   }
 }
 
@@ -914,35 +946,34 @@ const handleViewHistory = async (record: InventoryItem): Promise<void> => {
   historyLoading.value = true
 
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // 模拟历史数据
+    // TODO: 调用获取库存变更记录的API
+    // const response = await getProductStockHistory(record.id)
+    
+    // 暂时使用模拟数据，等待后端API开发完成
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    
     historyData.value = [
       {
         id: '1',
         type: 'out',
-        change: -5,
-        beforeStock: 50,
-        afterStock: 45,
+        change: -2,
+        beforeStock: record.stock + 2,
+        afterStock: record.stock,
         reason: '销售出库',
-        operator: '张三',
-        createTime: '2024-01-15 14:30:00',
-        remark: '订单号: ORD20240115001',
-      },
-      {
-        id: '2',
-        type: 'in',
-        change: 20,
-        beforeStock: 30,
-        afterStock: 50,
-        reason: '采购入库',
-        operator: '李四',
-        createTime: '2024-01-15 09:15:00',
-        remark: '采购单号: PUR20240115001',
-      },
+        operator: '系统',
+        createTime: new Date().toISOString(),
+        remark: '最近一次库存变更记录',
+      }
     ]
+    
+    // if (response.success) {
+    //   historyData.value = response.data
+    // } else {
+    //   message.error(response.message || '获取变更记录失败')
+    // }
+    
   } catch (error) {
+    console.error('获取变更记录失败:', error)
     message.error('加载变更记录失败')
   } finally {
     historyLoading.value = false

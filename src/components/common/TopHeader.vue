@@ -310,8 +310,9 @@ const toggleTheme = (): void => {
 /**
  * 处理搜索
  */
-const handleSearch = createDebouncedFn((value: string) => {
-  if (!value.trim()) {
+const handleSearch = createDebouncedFn((value: unknown) => {
+  const searchValue = String(value || '')
+  if (!searchValue.trim()) {
     searchOptions.value = []
     return
   }
@@ -327,7 +328,7 @@ const handleSearch = createDebouncedFn((value: string) => {
   ]
 
   searchOptions.value = mockOptions.filter((option) =>
-    option.label.toLowerCase().includes(value.toLowerCase()),
+    option.label.toLowerCase().includes(searchValue.toLowerCase()),
   )
 }, 300)
 

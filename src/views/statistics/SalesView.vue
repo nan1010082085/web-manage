@@ -259,6 +259,8 @@ import { debounce } from 'lodash-es'
 import dayjs, { type Dayjs } from 'dayjs'
 import HighChart from '@/components/common/HighChart.vue'
 import { salesChartConfigs } from '@/config/charts/chartConfigs'
+import { getSalesTrendData, getProductSalesData } from '@/api/charts'
+import { getOrderData } from '@/api/analytics'
 
 /**
  * 销售统计页面
@@ -390,66 +392,62 @@ const tableColumns: TableColumnsType = [
 const loadSalesData = async (): Promise<void> => {
   tableLoading.value = true
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // 调用真实API获取订单数据
+    const orderResponse = await getOrderData(
+      {
+        current: pagination.current,
+        pageSize: pagination.pageSize,
+      },
+      {
+        startDate: dateRange.value?.[0] ? dayjs(dateRange.value[0]).format('YYYY-MM-DD') : dayjs().subtract(30, 'day').format('YYYY-MM-DD'),
+        endDate: dateRange.value?.[1] ? dayjs(dateRange.value[1]).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
+      }
+    )
     
-    // 模拟核心指标数据
-    metrics.value = {
-      totalSales: 1234567.89,
-      totalOrders: 2345,
-      avgOrderValue: 526.32,
-      conversionRate: 3.45,
-      salesTrend: 12.5,
-      ordersTrend: 8.3,
-      aovTrend: -2.1,
-      conversionTrend: 5.7,
+    if (orderResponse.code === 200) {
+      const orderData = orderResponse.data
+      
+      // 计算核心指标
+      const totalSales = orderData.list.reduce((sum, item) => sum + item.amount, 0)
+      const totalOrders = orderData.total
+      const avgOrderValue = totalOrders > 0 ? totalSales / totalOrders : 0
+      
+      metrics.value = {
+        totalSales,
+        totalOrders,
+        avgOrderValue,
+        conversionRate: 3.45, // 暂时使用固定值
+        salesTrend: 12.5,
+        ordersTrend: 8.3,
+        aovTrend: -2.1,
+        conversionTrend: 5.7,
+      }
+      
+      // 转换订单数据为销售明细格式
+      const salesItems: SalesItem[] = orderData.list.map(order => ({
+        id: order.id,
+        productName: order.productName || '未知商品',
+        sku: order.productSku || 'N/A',
+        category: order.category || '其他',
+        salesAmount: order.amount,
+        quantity: order.quantity || 1,
+        profit: order.amount * 0.1, // 假设利润率为10%
+        trend: Math.random() * 40 - 20, // 随机趋势值
+        channel: order.channel || '线上',
+        region: order.region || '未知',
+      }))
+      
+      salesData.value = salesItems
+      pagination.total = orderData.total
+    } else {
+      console.error('API响应错误:', orderResponse)
+      message.error(orderResponse.message || '获取数据失败')
+      return
     }
     
-    // 模拟销售明细数据
-    const mockData: SalesItem[] = [
-      {
-        id: '1',
-        productName: 'iPhone 15 Pro Max',
-        sku: 'IP15PM001',
-        category: '电子产品',
-        salesAmount: 89991.00,
-        quantity: 9,
-        profit: 8999.10,
-        trend: 15.2,
-        channel: '线上',
-        region: '华东',
-      },
-      {
-        id: '2',
-        productName: 'MacBook Pro 16"',
-        sku: 'MBP16001',
-        category: '电子产品',
-        salesAmount: 75996.00,
-        quantity: 4,
-        profit: 7599.60,
-        trend: -5.3,
-        channel: '线下',
-        region: '华北',
-      },
-      {
-        id: '3',
-        productName: 'AirPods Pro 2',
-        sku: 'APP2001',
-        category: '数码配件',
-        salesAmount: 37980.00,
-        quantity: 20,
-        profit: 3798.00,
-        trend: 23.7,
-        channel: '线上',
-        region: '华南',
-      },
-    ]
-    
-    salesData.value = mockData
-    pagination.total = mockData.length
-    
     // 图表已通过HighChart组件自动渲染
-  } catch (__error) {
+  } catch (error) {
+    console.error('加载销售数据失败:', error)
     message.error('加载销售数据失败')
   } finally {
     tableLoading.value = false

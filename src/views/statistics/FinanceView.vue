@@ -12,11 +12,7 @@
           :presets="datePresets"
           @change="handleDateChange"
         />
-        <a-select
-          v-model:value="reportType"
-          @change="handleReportTypeChange"
-          style="width: 120px"
-        >
+        <a-select v-model:value="reportType" @change="handleReportTypeChange" style="width: 120px">
           <a-select-option value="revenue">收入</a-select-option>
           <a-select-option value="expense">支出</a-select-option>
           <a-select-option value="profit">利润</a-select-option>
@@ -46,7 +42,10 @@
               :value-style="{ color: '#52c41a' }"
             >
               <template #suffix>
-                <span class="trend-indicator" :class="overview.revenueTrend > 0 ? 'positive' : 'negative'">
+                <span
+                  class="trend-indicator"
+                  :class="overview.revenueTrend > 0 ? 'positive' : 'negative'"
+                >
                   <ArrowUpOutlined v-if="overview.revenueTrend > 0" />
                   <ArrowDownOutlined v-else />
                   {{ Math.abs(overview.revenueTrend) }}%
@@ -65,7 +64,10 @@
               :value-style="{ color: '#ff4d4f' }"
             >
               <template #suffix>
-                <span class="trend-indicator" :class="overview.expenseTrend > 0 ? 'negative' : 'positive'">
+                <span
+                  class="trend-indicator"
+                  :class="overview.expenseTrend > 0 ? 'negative' : 'positive'"
+                >
                   <ArrowUpOutlined v-if="overview.expenseTrend > 0" />
                   <ArrowDownOutlined v-else />
                   {{ Math.abs(overview.expenseTrend) }}%
@@ -84,7 +86,10 @@
               :value-style="{ color: overview.netProfit >= 0 ? '#1890ff' : '#ff4d4f' }"
             >
               <template #suffix>
-                <span class="trend-indicator" :class="overview.profitTrend > 0 ? 'positive' : 'negative'">
+                <span
+                  class="trend-indicator"
+                  :class="overview.profitTrend > 0 ? 'positive' : 'negative'"
+                >
                   <ArrowUpOutlined v-if="overview.profitTrend > 0" />
                   <ArrowDownOutlined v-else />
                   {{ Math.abs(overview.profitTrend) }}%
@@ -103,7 +108,10 @@
               :value-style="{ color: '#722ed1' }"
             >
               <template #suffix>
-                <span class="trend-indicator" :class="overview.marginTrend > 0 ? 'positive' : 'negative'">
+                <span
+                  class="trend-indicator"
+                  :class="overview.marginTrend > 0 ? 'positive' : 'negative'"
+                >
                   <ArrowUpOutlined v-if="overview.marginTrend > 0" />
                   <ArrowDownOutlined v-else />
                   {{ Math.abs(overview.marginTrend) }}%
@@ -131,7 +139,7 @@
             <HighChart :options="financeChartConfigs.trendChart" height="300px" />
           </a-card>
         </a-col>
-        
+
         <!-- 收入构成饼图 -->
         <a-col :span="8">
           <a-card title="收入构成" class="chart-card">
@@ -139,7 +147,7 @@
           </a-card>
         </a-col>
       </a-row>
-      
+
       <a-row :gutter="16" style="margin-top: 16px">
         <!-- 支出分类 -->
         <a-col :span="8">
@@ -147,7 +155,7 @@
             <HighChart :options="financeChartConfigs.expenseChart" height="250px" />
           </a-card>
         </a-col>
-        
+
         <!-- 现金流分析 -->
         <a-col :span="16">
           <a-card title="现金流分析" class="chart-card">
@@ -179,7 +187,7 @@
             </div>
           </a-card>
         </a-col>
-        
+
         <!-- 预算执行情况 -->
         <a-col :span="12">
           <a-card title="预算执行情况">
@@ -247,7 +255,7 @@
             </a-select>
           </a-space>
         </template>
-        
+
         <a-table
           :columns="tableColumns"
           :data-source="financeData"
@@ -263,34 +271,25 @@
                 {{ getTypeText(record.type) }}
               </a-tag>
             </template>
-            
+
             <template v-else-if="column.key === 'amount'">
               <span class="amount" :class="record.type === 'income' ? 'income' : 'expense'">
                 {{ record.type === 'income' ? '+' : '-' }}¥{{ Math.abs(record.amount).toFixed(2) }}
               </span>
             </template>
-            
+
             <template v-else-if="column.key === 'status'">
               <a-tag :color="getStatusColor(record.status)">
                 {{ getStatusText(record.status) }}
               </a-tag>
             </template>
-            
+
             <template v-else-if="column.key === 'actions'">
               <a-space>
-                <a-button type="link" size="small" @click="viewDetail(record)">
-                  查看
-                </a-button>
-                <a-button type="link" size="small" @click="editRecord(record)">
-                  编辑
-                </a-button>
-                <a-popconfirm
-                  title="确定要删除这条记录吗？"
-                  @confirm="deleteRecord(record.id)"
-                >
-                  <a-button type="link" size="small" danger>
-                    删除
-                  </a-button>
+                <a-button type="link" size="small" @click="viewDetail(record)"> 查看 </a-button>
+                <a-button type="link" size="small" @click="editRecord(record)"> 编辑 </a-button>
+                <a-popconfirm title="确定要删除这条记录吗？" @confirm="deleteRecord(record.id)">
+                  <a-button type="link" size="small" danger> 删除 </a-button>
                 </a-popconfirm>
               </a-space>
             </template>
@@ -305,7 +304,9 @@
       title="财务记录详情"
       :footer="null"
       width="600px"
-     ok-text="确定" cancel-text="取消">
+      ok-text="确定"
+      cancel-text="取消"
+    >
       <div class="detail-content" v-if="selectedRecord">
         <a-descriptions :column="2" bordered>
           <a-descriptions-item label="交易ID">{{ selectedRecord.id }}</a-descriptions-item>
@@ -316,7 +317,9 @@
           </a-descriptions-item>
           <a-descriptions-item label="金额">
             <span class="amount" :class="selectedRecord.type === 'income' ? 'income' : 'expense'">
-              {{ selectedRecord.type === 'income' ? '+' : '-' }}¥{{ Math.abs(selectedRecord.amount).toFixed(2) }}
+              {{ selectedRecord.type === 'income' ? '+' : '-' }}¥{{
+                Math.abs(selectedRecord.amount).toFixed(2)
+              }}
             </span>
           </a-descriptions-item>
           <a-descriptions-item label="分类">{{ selectedRecord.category }}</a-descriptions-item>
@@ -325,10 +328,18 @@
               {{ getStatusText(selectedRecord.status) }}
             </a-tag>
           </a-descriptions-item>
-          <a-descriptions-item label="交易时间">{{ selectedRecord.transactionTime }}</a-descriptions-item>
-          <a-descriptions-item label="创建时间">{{ selectedRecord.createTime }}</a-descriptions-item>
-          <a-descriptions-item label="更新时间">{{ selectedRecord.updateTime }}</a-descriptions-item>
-          <a-descriptions-item label="备注" :span="2">{{ selectedRecord.remark || '无' }}</a-descriptions-item>
+          <a-descriptions-item label="交易时间">{{
+            selectedRecord.transactionTime
+          }}</a-descriptions-item>
+          <a-descriptions-item label="创建时间">{{
+            selectedRecord.createTime
+          }}</a-descriptions-item>
+          <a-descriptions-item label="更新时间">{{
+            selectedRecord.updateTime
+          }}</a-descriptions-item>
+          <a-descriptions-item label="备注" :span="2">{{
+            selectedRecord.remark || '无'
+          }}</a-descriptions-item>
         </a-descriptions>
       </div>
     </a-modal>
@@ -350,6 +361,8 @@ import { debounce } from 'lodash-es'
 import dayjs, { type Dayjs } from 'dayjs'
 import HighChart from '@/components/common/HighChart.vue'
 import { financeChartConfigs } from '@/config/charts/chartConfigs'
+import { getOrderData } from '@/api/analytics'
+import { getPaymentDistributionData } from '@/api/analytics'
 
 /**
  * 财务统计页面
@@ -443,7 +456,13 @@ const datePresets = [
   { label: '最近7天', value: [dayjs().subtract(7, 'day'), dayjs()] },
   { label: '最近30天', value: [dayjs().subtract(30, 'day'), dayjs()] },
   { label: '本月', value: [dayjs().startOf('month'), dayjs().endOf('month')] },
-  { label: '上月', value: [dayjs().subtract(1, 'month').startOf('month'), dayjs().subtract(1, 'month').endOf('month')] },
+  {
+    label: '上月',
+    value: [
+      dayjs().subtract(1, 'month').startOf('month'),
+      dayjs().subtract(1, 'month').endOf('month'),
+    ],
+  },
 ]
 
 // 表格列配置
@@ -569,85 +588,137 @@ const getBudgetStatus = (percentage: number): 'success' | 'normal' | 'exception'
 const loadFinanceData = async (): Promise<void> => {
   tableLoading.value = true
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // 模拟概览数据
-    overview.value = {
-      totalRevenue: 1256780.50,
-      totalExpense: 856432.20,
-      netProfit: 400348.30,
-      profitMargin: 31.85,
-      revenueTrend: 12.5,
-      expenseTrend: 8.3,
-      profitTrend: 18.7,
-      marginTrend: 5.2,
-    }
-    
-    // 模拟关键指标数据
-    keyMetrics.value = [
-      { key: 'roa', label: '资产回报率', value: '15.6', unit: '%', trend: 2.3 },
-      { key: 'roe', label: '净资产收益率', value: '22.8', unit: '%', trend: 4.1 },
-      { key: 'current_ratio', label: '流动比率', value: '1.85', unit: '', trend: -0.5 },
-      { key: 'debt_ratio', label: '资产负债率', value: '45.2', unit: '%', trend: -1.8 },
-      { key: 'inventory_turnover', label: '存货周转率', value: '8.5', unit: '次', trend: 3.2 },
-      { key: 'receivables_turnover', label: '应收账款周转率', value: '12.3', unit: '次', trend: 1.7 },
-    ]
-    
-    // 模拟预算数据
-    budgetData.value = [
-      { category: '营销费用', used: 85600, total: 100000, percentage: 85.6 },
-      { category: '运营费用', used: 67800, total: 80000, percentage: 84.75 },
-      { category: '人力成本', used: 156000, total: 150000, percentage: 104 },
-      { category: '技术投入', used: 42300, total: 60000, percentage: 70.5 },
-      { category: '办公费用', used: 23400, total: 30000, percentage: 78 },
-    ]
-    
-    // 模拟财务明细数据
-    const mockData: FinanceItem[] = [
+    // 调用真实API获取订单数据
+    const response = await getOrderData(
       {
-        id: 'FIN001',
-        type: 'income',
-        amount: 25680.50,
+        current: 1,
+        pageSize: 1000,
+      },
+      {
+        startDate: dateRange.value?.[0] ? dayjs(dateRange.value[0]).format('YYYY-MM-DD') : dayjs().subtract(30, 'day').format('YYYY-MM-DD'),
+        endDate: dateRange.value?.[1] ? dayjs(dateRange.value[1]).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
+      },
+    )
+
+    if (response.code === 200) {
+      const orderData = response.data
+
+      // 基于订单数据计算财务概览
+      const totalRevenue = orderData.list.reduce((sum, order) => sum + order.amount, 0)
+      const totalExpense = totalRevenue * 0.68 // 假设成本率68%
+      const netProfit = totalRevenue - totalExpense
+      const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0
+
+      overview.value = {
+        totalRevenue,
+        totalExpense,
+        netProfit,
+        profitMargin,
+        revenueTrend: Math.random() * 20 - 10, // 模拟趋势
+        expenseTrend: Math.random() * 15 - 7.5,
+        profitTrend: Math.random() * 25 - 12.5,
+        marginTrend: Math.random() * 10 - 5,
+      }
+
+      // 模拟关键指标数据
+      keyMetrics.value = [
+        { key: 'roa', label: '资产回报率', value: '15.6', unit: '%', trend: 2.3 },
+        { key: 'roe', label: '净资产收益率', value: '22.8', unit: '%', trend: 4.1 },
+        { key: 'current_ratio', label: '流动比率', value: '1.85', unit: '', trend: -0.5 },
+        { key: 'debt_ratio', label: '资产负债率', value: '45.2', unit: '%', trend: -1.8 },
+        { key: 'inventory_turnover', label: '存货周转率', value: '8.5', unit: '次', trend: 3.2 },
+        {
+          key: 'receivables_turnover',
+          label: '应收账款周转率',
+          value: '12.3',
+          unit: '次',
+          trend: 1.7,
+        },
+      ]
+
+      // 模拟预算数据
+      budgetData.value = [
+        { category: '营销费用', used: 85600, total: 100000, percentage: 85.6 },
+        { category: '运营费用', used: 67800, total: 80000, percentage: 84.75 },
+        { category: '人力成本', used: 156000, total: 150000, percentage: 104 },
+        { category: '技术投入', used: 42300, total: 60000, percentage: 70.5 },
+        { category: '办公费用', used: 23400, total: 30000, percentage: 78 },
+      ]
+
+      // 将订单数据转换为财务明细数据
+      const financeItems: FinanceItem[] = orderData.list.map((order) => ({
+        id: order.id,
+        type: 'income' as const,
+        amount: order.amount,
         category: '销售收入',
-        description: '商品销售收入',
-        status: 'completed',
-        transactionTime: '2024-01-15 14:30:00',
-        createTime: '2024-01-15 14:30:00',
-        updateTime: '2024-01-15 14:30:00',
-        remark: '正常销售收入',
-      },
-      {
-        id: 'FIN002',
-        type: 'expense',
-        amount: -8500.00,
-        category: '营销费用',
-        description: '广告投放费用',
-        status: 'completed',
-        transactionTime: '2024-01-15 10:15:00',
-        createTime: '2024-01-15 10:15:00',
-        updateTime: '2024-01-15 10:15:00',
-        remark: '百度推广费用',
-      },
-      {
-        id: 'FIN003',
-        type: 'income',
-        amount: 12300.00,
-        category: '服务收入',
-        description: '技术服务费',
-        status: 'pending',
-        transactionTime: '2024-01-14 16:45:00',
-        createTime: '2024-01-14 16:45:00',
-        updateTime: '2024-01-14 16:45:00',
-      },
-    ]
-    
-    financeData.value = mockData
-    pagination.total = mockData.length
-    
+        description: `订单收入 - ${order.orderNo}`,
+        status: order.status,
+        transactionTime: order.createTime,
+        createTime: order.createTime,
+        updateTime: order.createTime,
+        remark: `用户: ${order.userName}`,
+      }))
+
+      // 添加一些支出记录
+      const expenseItems: FinanceItem[] = [
+        {
+          id: 'exp_1',
+          type: 'expense',
+          amount: totalExpense * 0.4,
+          category: '营销费用',
+          description: '广告投放费用',
+          status: 'completed',
+          transactionTime: dateRange.value?.[1] ? dayjs(dateRange.value[1]).format('YYYY-MM-DD HH:mm:ss') : dayjs().format('YYYY-MM-DD HH:mm:ss'),
+          createTime: dateRange.value?.[1] ? dayjs(dateRange.value[1]).format('YYYY-MM-DD HH:mm:ss') : dayjs().format('YYYY-MM-DD HH:mm:ss'),
+          updateTime: dateRange.value?.[1] ? dayjs(dateRange.value[1]).format('YYYY-MM-DD HH:mm:ss') : dayjs().format('YYYY-MM-DD HH:mm:ss'),
+          remark: '推广费用',
+        },
+        {
+          id: 'exp_2',
+          type: 'expense',
+          amount: totalExpense * 0.3,
+          category: '运营费用',
+          description: '运营成本',
+          status: 'completed',
+          transactionTime: dateRange.value?.[1] ? dayjs(dateRange.value[1]).format('YYYY-MM-DD HH:mm:ss') : dayjs().format('YYYY-MM-DD HH:mm:ss'),
+          createTime: dateRange.value?.[1] ? dayjs(dateRange.value[1]).format('YYYY-MM-DD HH:mm:ss') : dayjs().format('YYYY-MM-DD HH:mm:ss'),
+          updateTime: dateRange.value?.[1] ? dayjs(dateRange.value[1]).format('YYYY-MM-DD HH:mm:ss') : dayjs().format('YYYY-MM-DD HH:mm:ss'),
+          remark: '日常运营',
+        },
+      ]
+
+      let allFinanceData = [...financeItems, ...expenseItems]
+
+      // 应用搜索和筛选
+      if (searchKeyword.value) {
+        allFinanceData = allFinanceData.filter(
+          (item) =>
+            item.description.includes(searchKeyword.value) ||
+            item.category.includes(searchKeyword.value),
+        )
+      }
+
+      if (typeFilter.value) {
+        allFinanceData = allFinanceData.filter((item) => item.type === typeFilter.value)
+      }
+
+      if (categoryFilter.value) {
+        allFinanceData = allFinanceData.filter((item) => item.category === categoryFilter.value)
+      }
+
+      // 分页处理
+      const startIndex = (pagination.current - 1) * pagination.pageSize
+      const endIndex = startIndex + pagination.pageSize
+      financeData.value = allFinanceData.slice(startIndex, endIndex)
+      pagination.total = allFinanceData.length
+    } else {
+      message.error(response.message || '获取财务数据失败')
+    }
+
     // 图表已通过HighChart组件自动渲染
-  } catch (__error) {
-    message.error('加载财务数据失败')
+  } catch (error) {
+    console.error('加载财务数据失败:', error)
+    message.error('加载财务数据失败，请重试')
   } finally {
     tableLoading.value = false
   }
@@ -769,7 +840,7 @@ onMounted(() => {
     font-weight: 600;
     color: #262626;
   }
-  
+
   .page-description {
     margin: 0;
     color: #8c8c8c;
@@ -785,35 +856,35 @@ onMounted(() => {
 
 .overview-section {
   margin-bottom: 24px;
-  
+
   .overview-card {
     text-align: center;
-    
+
     :deep(.ant-statistic-title) {
       font-size: 14px;
       color: #8c8c8c;
       margin-bottom: 8px;
     }
-    
+
     :deep(.ant-statistic-content) {
       display: flex;
       align-items: center;
       justify-content: center;
-      
+
       .ant-statistic-content-value {
         font-size: 24px;
         font-weight: 600;
       }
     }
-    
+
     .trend-indicator {
       font-size: 12px;
       margin-left: 8px;
-      
+
       &.positive {
         color: #52c41a;
       }
-      
+
       &.negative {
         color: #ff4d4f;
       }
@@ -823,11 +894,11 @@ onMounted(() => {
 
 .charts-section {
   margin-bottom: 24px;
-  
+
   .chart-card {
     .chart-container {
       height: 300px;
-      
+
       &:last-child {
         height: 250px;
       }
@@ -837,100 +908,100 @@ onMounted(() => {
 
 .metrics-section {
   margin-bottom: 24px;
-  
+
   .metrics-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
-    
+
     .metric-item {
       padding: 16px;
       background: #fafafa;
       border-radius: 6px;
       text-align: center;
-      
+
       .metric-label {
         font-size: 14px;
         color: #8c8c8c;
         margin-bottom: 8px;
       }
-      
+
       .metric-value {
         font-size: 20px;
         font-weight: 600;
         margin-bottom: 4px;
-        
+
         &.positive {
           color: #52c41a;
         }
-        
+
         &.negative {
           color: #ff4d4f;
         }
-        
+
         &.neutral {
           color: #1890ff;
         }
-        
+
         .metric-unit {
           font-size: 14px;
           margin-left: 4px;
         }
       }
-      
+
       .metric-trend {
         font-size: 12px;
-        
+
         &.positive {
           color: #52c41a;
         }
-        
+
         &.negative {
           color: #ff4d4f;
         }
       }
     }
   }
-  
+
   .budget-container {
     .budget-item {
       margin-bottom: 16px;
-      
+
       &:last-child {
         margin-bottom: 0;
       }
-      
+
       .budget-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 8px;
-        
+
         .budget-category {
           font-weight: 500;
           color: #262626;
         }
-        
+
         .budget-percentage {
           font-weight: 600;
           color: #1890ff;
         }
       }
-      
+
       .budget-progress {
         margin-bottom: 8px;
       }
-      
+
       .budget-details {
         display: flex;
         justify-content: space-between;
         font-size: 12px;
         color: #8c8c8c;
-        
+
         .budget-used {
           color: #ff4d4f;
         }
-        
+
         .budget-total {
           color: #52c41a;
         }
@@ -942,11 +1013,11 @@ onMounted(() => {
 .table-section {
   .amount {
     font-weight: 600;
-    
+
     &.income {
       color: #52c41a;
     }
-    
+
     &.expense {
       color: #ff4d4f;
     }
@@ -956,11 +1027,11 @@ onMounted(() => {
 .detail-content {
   .amount {
     font-weight: 600;
-    
+
     &.income {
       color: #52c41a;
     }
-    
+
     &.expense {
       color: #ff4d4f;
     }
@@ -972,35 +1043,35 @@ onMounted(() => {
   .finance-stats-view {
     padding: 16px;
   }
-  
+
   .page-header {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .header-actions {
     width: 100%;
     justify-content: flex-start;
     flex-wrap: wrap;
   }
-  
+
   .overview-section {
     .ant-col {
       margin-bottom: 16px;
     }
   }
-  
+
   .charts-section {
     .ant-col {
       margin-bottom: 16px;
     }
   }
-  
+
   .metrics-section {
     .ant-col {
       margin-bottom: 16px;
     }
-    
+
     .metrics-grid {
       grid-template-columns: 1fr;
     }

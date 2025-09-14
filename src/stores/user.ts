@@ -43,7 +43,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       const response = await post<LoginResponse>('/auth/login', loginForm)
       
-      if (response.success) {
+      if (response.code === 200) {
         const { token: newToken, userInfo: newUserInfo } = response.data
         
         // 保存到状态
@@ -99,7 +99,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       const response = await post<UserInfo>('/auth/userinfo')
       
-      if (response.success) {
+      if (response.code === 200) {
         userInfo.value = response.data
         localStorage.setItem(STORAGE_KEYS.USER_INFO, JSON.stringify(response.data))
       }

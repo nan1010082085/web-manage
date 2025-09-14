@@ -5,12 +5,12 @@ import type { Options } from 'highcharts'
 /**
  * 图表数据加载函数类型
  */
-type ChartDataLoader<T = any, P = any> = (params?: P) => Promise<{ data: T }>
+type ChartDataLoader<T = unknown, P = unknown> = (params?: P) => Promise<{ data: T }>
 
 /**
  * 图表配置生成函数类型
  */
-type ChartConfigGenerator<T = any> = (data: T, baseConfig: any) => Options
+type ChartConfigGenerator<T = unknown> = (data: T, baseConfig: Options) => Options
 
 /**
  * 图表数据管理Hook的配置选项
@@ -21,7 +21,7 @@ interface UseChartDataOptions<T, P> {
   /** 图表配置生成函数 */
   configGenerator: ChartConfigGenerator<T>
   /** 基础图表配置 */
-  baseConfig: any
+  baseConfig: Options
   /** 初始数据 */
   initialData?: T
   /** 错误消息前缀 */
@@ -77,7 +77,7 @@ interface UseChartDataReturn<T, P> {
  * })
  * ```
  */
-export function useChartData<T = any, P = any>({
+export function useChartData<T = unknown, P = unknown>({
   loader,
   configGenerator,
   baseConfig,
@@ -169,13 +169,13 @@ export function useChartData<T = any, P = any>({
  * ])
  * ```
  */
-export function useBatchChartData<T extends Record<string, any>>(
+export function useBatchChartData<T extends Record<string, unknown>>(
   charts: Array<{
     key: keyof T
     loader: ChartDataLoader
     configGenerator: ChartConfigGenerator
-    baseConfig: any
-    initialData?: any
+    baseConfig: Options
+    initialData?: unknown
     errorMessagePrefix?: string
     successMessagePrefix?: string
   }>

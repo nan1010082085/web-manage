@@ -2,6 +2,7 @@
 import { useUserStore } from '@/stores/user'
 import { useAppStore } from '@/stores/app'
 import { onMounted } from 'vue'
+import zhCN from 'ant-design-vue/es/locale/zh_CN'
 
 /**
  * 应用根组件
@@ -28,7 +29,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <RouterView />
+  <a-config-provider :locale="zhCN">
+    <RouterView />
+  </a-config-provider>
 </template>
 
-<style></style>
+<style>
+.ant-select,
+.ant-input,
+.ant-input-number {
+  width: 100%;
+}
+</style>

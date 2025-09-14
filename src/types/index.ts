@@ -1,6 +1,7 @@
 /**
  * 通用类型定义
  */
+import type { Component } from 'vue'
 
 /**
  * 用户信息接口
@@ -43,7 +44,7 @@ export interface MenuItem {
   key: string
   title: string
   path?: string
-  icon?: any
+  icon?: Component | string
   component?: string
   permission?: string
   disabled?: boolean

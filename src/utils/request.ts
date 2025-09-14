@@ -1,15 +1,6 @@
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios'
 import { message } from 'ant-design-vue'
-
-/**
- * 响应数据接口
- */
-interface ApiResponse<T = any> {
-  code: number
-  data: T
-  message: string
-  success: boolean
-}
+import type { ApiResponse } from '@/api'
 
 /**
  * 创建axios实例
@@ -50,7 +41,7 @@ service.interceptors.response.use(
 
     // 如果返回的状态码为200，说明接口请求成功，可以正常拿到数据
     if (response.status === 200) {
-      if (data.success) {
+      if (data.code === 200) {
         return response
       } else {
         // 业务错误

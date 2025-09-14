@@ -10,6 +10,8 @@ import type {
   OrderDataItem,
   DateRange,
   PaginationParams,
+  DataOverview,
+  RealtimeData,
 } from '@/views/analytics/types'
 import { mockGetOverviewData, mockGetChartData, mockGetTableData } from '@/mock/analytics'
 
@@ -18,7 +20,9 @@ import { mockGetOverviewData, mockGetChartData, mockGetTableData } from '@/mock/
  * @param dateRange 日期范围
  * @returns 概览数据
  */
-export const getOverviewData = async (dateRange?: DateRange): Promise<ApiResponse<any>> => {
+export const getOverviewData = async (
+  dateRange?: DateRange,
+): Promise<ApiResponse<DataOverview>> => {
   return apiGet('/analytics/overview', { dateRange }, async () => {
     const mockData = await mockGetOverviewData()
     return {
@@ -117,7 +121,9 @@ export const getOrderData = async (
  * @param dateRange 日期范围
  * @returns 销售趋势数据
  */
-export const getSalesTrendData = async (dateRange?: DateRange): Promise<ApiResponse<any>> => {
+export const getSalesTrendData = async (
+  dateRange?: DateRange,
+): Promise<ApiResponse<Record<string, unknown>>> => {
   return apiGet('/analytics/sales-trend', { dateRange }, async () => {
     const chartData = await mockGetChartData()
     return {
@@ -134,7 +140,9 @@ export const getSalesTrendData = async (dateRange?: DateRange): Promise<ApiRespo
  * @param dateRange 日期范围
  * @returns 用户增长数据
  */
-export const getUserGrowthData = async (dateRange?: DateRange): Promise<ApiResponse<any>> => {
+export const getUserGrowthData = async (
+  dateRange?: DateRange,
+): Promise<ApiResponse<Record<string, unknown>>> => {
   return apiGet('/analytics/user-growth', { dateRange }, async () => {
     const chartData = await mockGetChartData()
     return {
@@ -153,7 +161,7 @@ export const getUserGrowthData = async (dateRange?: DateRange): Promise<ApiRespo
  */
 export const getCategoryDistributionData = async (
   dateRange?: DateRange,
-): Promise<ApiResponse<any>> => {
+): Promise<ApiResponse<Record<string, unknown>>> => {
   return apiGet('/analytics/category-distribution', { dateRange }, async () => {
     const chartData = await mockGetChartData()
     return {
@@ -172,7 +180,7 @@ export const getCategoryDistributionData = async (
  */
 export const getRegionDistributionData = async (
   dateRange?: DateRange,
-): Promise<ApiResponse<any>> => {
+): Promise<ApiResponse<Record<string, unknown>>> => {
   return apiGet('/analytics/region-distribution', { dateRange }, async () => {
     const chartData = await mockGetChartData()
     return {
@@ -191,7 +199,7 @@ export const getRegionDistributionData = async (
  */
 export const getPaymentDistributionData = async (
   dateRange?: DateRange,
-): Promise<ApiResponse<any>> => {
+): Promise<ApiResponse<Record<string, unknown>>> => {
   return apiGet('/analytics/payment-distribution', { dateRange }, async () => {
     const chartData = await mockGetChartData()
     return {
@@ -212,7 +220,7 @@ export const getPaymentDistributionData = async (
 export const getBarChartData = async (
   period: 'month' | 'quarter' = 'month',
   dateRange?: DateRange,
-): Promise<ApiResponse<any>> => {
+): Promise<ApiResponse<Record<string, unknown>>> => {
   return apiGet('/analytics/bar-chart', { period, dateRange }, async () => {
     const chartData = await mockGetChartData()
     return {
@@ -229,7 +237,9 @@ export const getBarChartData = async (
  * @param dateRange 日期范围
  * @returns 面积图数据
  */
-export const getAreaChartData = async (dateRange?: DateRange): Promise<ApiResponse<any>> => {
+export const getAreaChartData = async (
+  dateRange?: DateRange,
+): Promise<ApiResponse<Record<string, unknown>>> => {
   return apiGet('/analytics/area-chart', { dateRange }, async () => {
     const chartData = await mockGetChartData()
     return {
@@ -250,7 +260,7 @@ export const getAreaChartData = async (dateRange?: DateRange): Promise<ApiRespon
 export const getHeatmapData = async (
   metric: 'activity' | 'orders' | 'revenue' = 'activity',
   dateRange?: DateRange,
-): Promise<ApiResponse<any>> => {
+): Promise<ApiResponse<Record<string, unknown>>> => {
   return apiGet('/analytics/heatmap', { metric, dateRange }, async () => {
     const chartData = await mockGetChartData()
     return {
@@ -303,7 +313,7 @@ export const exportReport = async (dateRange?: DateRange): Promise<ApiResponse<B
  * 获取实时数据
  * @returns 实时数据
  */
-export const getRealtimeData = async (): Promise<ApiResponse<any>> => {
+export const getRealtimeData = async (): Promise<ApiResponse<RealtimeData>> => {
   return apiGet('/analytics/realtime', {}, async () => {
     const mockData = await mockGetOverviewData()
     return {

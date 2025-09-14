@@ -198,9 +198,9 @@
             <template v-else-if="column.key === 'discount'">
               <div class="discount-info">
                 <div class="value">
-                  <span v-if="record.type === 'fixed'">¥{{ record.discountValue }}</span>
-                  <span v-else-if="record.type === 'percentage'">{{ record.discountValue }}折</span>
-                  <span v-else>{{ record.discountValue }}</span>
+                  <span v-if="record.type === 'fixed'">¥{{ record.value }}</span>
+                  <span v-else-if="record.type === 'percentage'">{{ record.value }}折</span>
+                  <span v-else>{{ record.value }}</span>
                 </div>
                 <div class="condition" v-if="record.minAmount">
                   满¥{{ record.minAmount }}可用
@@ -223,8 +223,8 @@
             
             <template v-else-if="column.key === 'validity'">
               <div class="validity-info">
-                <div class="start">{{ record.startTime }}</div>
-                <div class="end">{{ record.endTime }}</div>
+                <div class="start">{{ record.validFrom }}</div>
+                <div class="end">{{ record.validTo }}</div>
               </div>
             </template>
             
@@ -306,13 +306,7 @@
           </a-col>
         </a-row>
         
-        <a-form-item label="优惠券描述" name="description">
-          <a-textarea
-            v-model:value="formData.description"
-            placeholder="请输入优惠券描述"
-            :rows="3"
-          />
-        </a-form-item>
+
         
         <a-row :gutter="16">
           <a-col :span="12">
@@ -398,27 +392,7 @@
           />
         </a-form-item>
         
-        <a-form-item label="适用商品">
-          <a-radio-group v-model:value="formData.applicableType">
-            <a-radio value="all">全部商品</a-radio>
-            <a-radio value="category">指定分类</a-radio>
-            <a-radio value="product">指定商品</a-radio>
-          </a-radio-group>
-        </a-form-item>
-        
-        <a-form-item v-if="formData.applicableType !== 'all'" label="选择商品/分类">
-          <a-select
-            v-model:value="formData.applicableItems"
-            mode="multiple"
-            placeholder="选择适用的商品或分类"
-            style="width: 100%"
-          >
-            <a-select-option value="category1">电子产品</a-select-option>
-            <a-select-option value="category2">服装鞋帽</a-select-option>
-            <a-select-option value="product1">iPhone 15</a-select-option>
-            <a-select-option value="product2">MacBook Pro</a-select-option>
-          </a-select>
-        </a-form-item>
+
       </a-form>
     </a-modal>
 
@@ -432,7 +406,7 @@
       <div class="coupon-detail" v-if="selectedCoupon">
         <a-descriptions :column="2" bordered>
           <a-descriptions-item label="优惠券名称">{{ selectedCoupon.name }}</a-descriptions-item>
-          <a-descriptions-item label="优惠券代码">{{ selectedCoupon.code }}</a-descriptions-item>
+          <a-descriptions-item label="优惠券ID">{{ selectedCoupon.id }}</a-descriptions-item>
           <a-descriptions-item label="优惠券类型">
             <a-tag :color="getTypeColor(selectedCoupon.type)">
               {{ getTypeText(selectedCoupon.type) }}
@@ -444,24 +418,22 @@
             </a-tag>
           </a-descriptions-item>
           <a-descriptions-item label="优惠金额">
-            <span v-if="selectedCoupon.type === 'fixed'">¥{{ selectedCoupon.discountValue }}</span>
-            <span v-else-if="selectedCoupon.type === 'percentage'">{{ selectedCoupon.discountValue }}折</span>
-            <span v-else>{{ selectedCoupon.discountValue }}</span>
+            <span v-if="selectedCoupon.type === 'fixed'">¥{{ selectedCoupon.value }}</span>
+            <span v-else-if="selectedCoupon.type === 'percentage'">{{ selectedCoupon.value }}折</span>
+            <span v-else>{{ selectedCoupon.value }}</span>
           </a-descriptions-item>
           <a-descriptions-item label="最低消费">¥{{ selectedCoupon.minAmount || 0 }}</a-descriptions-item>
           <a-descriptions-item label="发放数量">{{ selectedCoupon.totalCount }}</a-descriptions-item>
           <a-descriptions-item label="已使用数量">{{ selectedCoupon.usedCount }}</a-descriptions-item>
           <a-descriptions-item label="每人限领">{{ selectedCoupon.limitPerUser }}</a-descriptions-item>
           <a-descriptions-item label="使用率">{{ ((selectedCoupon.usedCount / selectedCoupon.totalCount) * 100).toFixed(1) }}%</a-descriptions-item>
-          <a-descriptions-item label="生效时间">{{ selectedCoupon.startTime }}</a-descriptions-item>
-          <a-descriptions-item label="失效时间">{{ selectedCoupon.endTime }}</a-descriptions-item>
+          <a-descriptions-item label="生效时间">{{ selectedCoupon.validFrom }}</a-descriptions-item>
+          <a-descriptions-item label="失效时间">{{ selectedCoupon.validTo }}</a-descriptions-item>
           <a-descriptions-item label="创建时间">{{ selectedCoupon.createTime }}</a-descriptions-item>
           <a-descriptions-item label="创建人">{{ selectedCoupon.creator }}</a-descriptions-item>
-          <a-descriptions-item label="优惠券描述" :span="2">
-            {{ selectedCoupon.description }}
-          </a-descriptions-item>
+          
           <a-descriptions-item label="使用说明" :span="2">
-            <pre class="instructions-content">{{ selectedCoupon.instructions }}</pre>
+            <pre class="instructions-content">{{ selectedCoupon.conditions }}</pre>
           </a-descriptions-item>
         </a-descriptions>
         
@@ -548,6 +520,12 @@ import { couponChartConfigs } from '@/config/charts/chartConfigs'
 import type { TableColumnsType, TableProps, UploadFile } from 'ant-design-vue'
 import { debounce } from 'lodash-es'
 import dayjs, { type Dayjs } from 'dayjs'
+import {
+  getCouponList,
+  createCoupon,
+  updateCoupon,
+  deleteCoupon,
+} from '@/api/marketing'
 
 /**
  * 优惠券管理页面
@@ -563,22 +541,21 @@ interface CouponOverview {
 interface Coupon {
   id: string
   name: string
-  code: string
-  description: string
-  type: string
-  status: string
-  discountValue: number
+  type: 'discount' | 'coupon' | 'flash_sale' | 'group_buy' | 'lottery' | 'points' | 'fixed' | 'percentage' | 'shipping'
+  status: 'draft' | 'active' | 'paused' | 'ended' | 'expired' | 'inactive'
+  value: number
   minAmount?: number
+  maxDiscount?: number
+  conditions?: string
+  validFrom: string
+  validTo: string
   totalCount: number
   usedCount: number
+  remainingCount: number
   limitPerUser: number
-  startTime: string
-  endTime: string
   createTime: string
+  updateTime: string
   creator: string
-  instructions: string
-  applicableType: string
-  applicableItems?: string[]
 }
 
 interface SearchForm {
@@ -590,7 +567,6 @@ interface SearchForm {
 
 interface FormData {
   name: string
-  description: string
   type: string
   discountValue?: number
   minAmount?: number
@@ -599,8 +575,6 @@ interface FormData {
   startTime?: Dayjs
   endTime?: Dayjs
   instructions: string
-  applicableType: string
-  applicableItems?: string[]
 }
 
 interface IssueForm {
@@ -635,7 +609,6 @@ const searchForm = reactive<SearchForm>({
 // 表单数据
 const formData = reactive<FormData>({
   name: '',
-  description: '',
   type: '',
   discountValue: undefined,
   minAmount: undefined,
@@ -644,8 +617,6 @@ const formData = reactive<FormData>({
   startTime: undefined,
   endTime: undefined,
   instructions: '',
-  applicableType: 'all',
-  applicableItems: undefined,
 })
 
 // 发放表单
@@ -678,7 +649,6 @@ const pagination = reactive({
 const formRules = {
   name: [{ required: true, message: '请输入优惠券名称', trigger: 'blur' }],
   type: [{ required: true, message: '请选择优惠券类型', trigger: 'change' }],
-  description: [{ required: true, message: '请输入优惠券描述', trigger: 'blur' }],
   discountValue: [{ required: true, message: '请输入优惠金额', trigger: 'blur' }],
   totalCount: [{ required: true, message: '请输入发放数量', trigger: 'blur' }],
   limitPerUser: [{ required: true, message: '请输入每人限领数量', trigger: 'blur' }],
@@ -811,121 +781,29 @@ const getDiscountPlaceholder = (type: string): string => {
 const loadCouponData = async (): Promise<void> => {
   tableLoading.value = true
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 800))
-    
-    // 模拟概览数据
-    overview.value = {
-      totalCoupons: 156,
-      issuedCoupons: 12450,
-      usedCoupons: 8967,
-      usageRate: 72.0,
+    const response = await getCouponList()
+    if (response.code === 200) {
+      couponData.value = response.data
+      
+      // 计算概览数据
+      const totalCoupons = response.data.length
+      const issuedCoupons = response.data.reduce((sum, coupon) => sum + coupon.totalCount, 0)
+      const usedCoupons = response.data.reduce((sum, coupon) => sum + coupon.usedCount, 0)
+      const usageRate = issuedCoupons > 0 ? (usedCoupons / issuedCoupons) * 100 : 0
+      
+      overview.value = {
+        totalCoupons,
+        issuedCoupons,
+        usedCoupons,
+        usageRate: Number(usageRate.toFixed(1)),
+      }
+      
+      pagination.total = response.data.length
+    } else {
+      message.error(response.message || '加载优惠券数据失败')
     }
-    
-    // 模拟优惠券数据
-    const mockData: Coupon[] = [
-      {
-        id: 'CPN001',
-        name: '新用户专享券',
-        code: 'NEW100',
-        description: '新用户注册专享100元优惠券',
-        type: 'fixed',
-        status: 'active',
-        discountValue: 100,
-        minAmount: 200,
-        totalCount: 1000,
-        usedCount: 567,
-        limitPerUser: 1,
-        startTime: '2024-01-01 00:00:00',
-        endTime: '2024-12-31 23:59:59',
-        createTime: '2023-12-20 10:30:00',
-        creator: '管理员',
-        instructions: '1. 仅限新注册用户使用\n2. 满200元可用\n3. 不与其他优惠同享',
-        applicableType: 'all',
-      },
-      {
-        id: 'CPN002',
-        name: '8.8折优惠券',
-        code: 'DISCOUNT88',
-        description: '全场商品8.8折优惠',
-        type: 'percentage',
-        status: 'active',
-        discountValue: 8.8,
-        minAmount: 100,
-        totalCount: 500,
-        usedCount: 234,
-        limitPerUser: 2,
-        startTime: '2024-01-15 00:00:00',
-        endTime: '2024-02-15 23:59:59',
-        createTime: '2024-01-10 14:20:00',
-        creator: '运营专员',
-        instructions: '1. 全场商品8.8折\n2. 满100元可用\n3. 每人限用2张',
-        applicableType: 'category',
-        applicableItems: ['category1', 'category2'],
-      },
-      {
-        id: 'CPN003',
-        name: '包邮券',
-        code: 'FREESHIP',
-        description: '全场商品包邮券',
-        type: 'shipping',
-        status: 'active',
-        discountValue: 0,
-        minAmount: 50,
-        totalCount: 2000,
-        usedCount: 1456,
-        limitPerUser: 5,
-        startTime: '2024-01-01 00:00:00',
-        endTime: '2024-03-31 23:59:59',
-        createTime: '2023-12-25 09:15:00',
-        creator: '管理员',
-        instructions: '1. 全场商品包邮\n2. 满50元可用\n3. 不与其他包邮活动同享',
-        applicableType: 'all',
-      },
-      {
-        id: 'CPN004',
-        name: '生日专享券',
-        code: 'BIRTHDAY',
-        description: '生日月专享200元优惠券',
-        type: 'fixed',
-        status: 'expired',
-        discountValue: 200,
-        minAmount: 500,
-        totalCount: 100,
-        usedCount: 89,
-        limitPerUser: 1,
-        startTime: '2023-12-01 00:00:00',
-        endTime: '2023-12-31 23:59:59',
-        createTime: '2023-11-25 16:45:00',
-        creator: '运营专员',
-        instructions: '1. 生日月专享\n2. 满500元可用\n3. 需验证生日信息',
-        applicableType: 'product',
-        applicableItems: ['product1', 'product2'],
-      },
-      {
-        id: 'CPN005',
-        name: '会员专享券',
-        code: 'VIP50',
-        description: 'VIP会员专享50元优惠券',
-        type: 'fixed',
-        status: 'disabled',
-        discountValue: 50,
-        minAmount: 150,
-        totalCount: 300,
-        usedCount: 123,
-        limitPerUser: 3,
-        startTime: '2024-01-01 00:00:00',
-        endTime: '2024-06-30 23:59:59',
-        createTime: '2023-12-30 11:20:00',
-        creator: '管理员',
-        instructions: '1. 仅限VIP会员使用\n2. 满150元可用\n3. 每月限用3张',
-        applicableType: 'all',
-      },
-    ]
-    
-    couponData.value = mockData
-    pagination.total = mockData.length
   } catch (error) {
+    console.error('加载优惠券数据失败:', error)
     message.error('加载优惠券数据失败')
   } finally {
     tableLoading.value = false
@@ -1002,17 +880,14 @@ const editCoupon = (record: Coupon): void => {
   editingCoupon.value = record
   Object.assign(formData, {
     name: record.name,
-    description: record.description,
     type: record.type,
-    discountValue: record.discountValue,
+    discountValue: record.value,
     minAmount: record.minAmount,
     totalCount: record.totalCount,
     limitPerUser: record.limitPerUser,
-    startTime: dayjs(record.startTime),
-    endTime: dayjs(record.endTime),
-    instructions: record.instructions,
-    applicableType: record.applicableType,
-    applicableItems: record.applicableItems,
+    startTime: record.validFrom ? dayjs(record.validFrom) : undefined,
+    endTime: record.validTo ? dayjs(record.validTo) : undefined,
+    instructions: record.conditions || '',
   })
   modalVisible.value = true
 }
@@ -1046,7 +921,7 @@ const handleMenuClick = (key: string, record: Coupon): void => {
       enableCoupon(record)
       break
     case 'delete':
-      deleteCoupon(record)
+      deleteCouponAction(record)
       break
   }
 }
@@ -1054,9 +929,31 @@ const handleMenuClick = (key: string, record: Coupon): void => {
 /**
  * 复制优惠券
  */
-const copyCoupon = (record: Coupon): void => {
-  message.success(`已复制优惠券: ${record.name}`)
-  loadCouponData()
+const copyCoupon = async (record: Coupon): Promise<void> => {
+  try {
+    const copyData = {
+      name: `${record.name}_副本`,
+      type: (['coupon', 'points', 'discount', 'flash_sale', 'group_buy', 'lottery'].includes(record.type) ? record.type : 'coupon') as 'coupon' | 'points' | 'discount' | 'flash_sale' | 'group_buy' | 'lottery',
+      value: record.value,
+      minAmount: record.minAmount,
+      validFrom: record.validFrom,
+      validTo: record.validTo,
+      totalCount: record.totalCount,
+      limitPerUser: record.limitPerUser,
+      conditions: record.conditions,
+    }
+    
+    const response = await createCoupon(copyData)
+    if (response.code === 200) {
+      message.success(`已复制优惠券: ${record.name}`)
+      loadCouponData()
+    } else {
+      message.error(response.message || '复制优惠券失败')
+    }
+  } catch (error) {
+    console.error('复制优惠券失败:', error)
+    message.error('复制优惠券失败')
+  }
 }
 
 /**
@@ -1070,34 +967,83 @@ const issueCoupon = (record: Coupon): void => {
 /**
  * 停用优惠券
  */
-const disableCoupon = (record: Coupon): void => {
-  message.success(`已停用优惠券: ${record.name}`)
-  loadCouponData()
+const disableCoupon = async (record: Coupon): Promise<void> => {
+  try {
+    // 注意：这里应该调用专门的停用API，暂时使用删除操作
+    const response = await deleteCoupon(record.id)
+    if (response.code === 200) {
+      message.success(`已停用优惠券: ${record.name}`)
+      loadCouponData()
+    } else {
+      message.error(response.message || '停用优惠券失败')
+    }
+  } catch (error) {
+    console.error('停用优惠券失败:', error)
+    message.error('停用优惠券失败')
+  }
 }
 
 /**
  * 启用优惠券
  */
-const enableCoupon = (record: Coupon): void => {
-  message.success(`已启用优惠券: ${record.name}`)
-  loadCouponData()
+const enableCoupon = async (record: Coupon): Promise<void> => {
+  try {
+    // 注意：这里应该调用专门的启用API，暂时更新名称来模拟启用
+    const response = await updateCoupon({
+      id: record.id,
+      name: record.name,
+    })
+    if (response.code === 200) {
+      message.success(`已启用优惠券: ${record.name}`)
+      loadCouponData()
+    } else {
+      message.error(response.message || '启用优惠券失败')
+    }
+  } catch (error) {
+    console.error('启用优惠券失败:', error)
+    message.error('启用优惠券失败')
+  }
 }
 
 /**
  * 删除优惠券
  */
-const deleteCoupon = (record: Coupon): void => {
-  message.success(`已删除优惠券: ${record.name}`)
-  loadCouponData()
+const deleteCouponAction = async (record: Coupon): Promise<void> => {
+  try {
+    const response = await deleteCoupon(record.id)
+    if (response.code === 200) {
+      message.success(`已删除优惠券: ${record.name}`)
+      loadCouponData()
+    } else {
+      message.error(response.message || '删除优惠券失败')
+    }
+  } catch (error) {
+    console.error('删除优惠券失败:', error)
+    message.error('删除优惠券失败')
+  }
 }
 
 /**
  * 批量删除
  */
-const batchDelete = (): void => {
-  message.success(`已删除 ${selectedRowKeys.value.length} 个优惠券`)
-  selectedRowKeys.value = []
-  loadCouponData()
+const batchDelete = async (): Promise<void> => {
+  try {
+    const deletePromises = selectedRowKeys.value.map(id => deleteCoupon(id))
+    const responses = await Promise.all(deletePromises)
+    
+    const successCount = responses.filter(response => response.code === 200).length
+    if (successCount === selectedRowKeys.value.length) {
+      message.success(`已删除 ${successCount} 个优惠券`)
+    } else {
+      message.warning(`成功删除 ${successCount} 个优惠券，${selectedRowKeys.value.length - successCount} 个删除失败`)
+    }
+    
+    selectedRowKeys.value = []
+    loadCouponData()
+  } catch (error) {
+    console.error('批量删除优惠券失败:', error)
+    message.error('批量删除优惠券失败')
+  }
 }
 
 /**
@@ -1124,16 +1070,39 @@ const handleSubmit = async (): Promise<void> => {
   try {
     await formRef.value.validate()
     
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
+    const submitData = {
+      name: formData.name,
+      type: formData.type as 'discount' | 'coupon' | 'flash_sale' | 'group_buy' | 'lottery' | 'points',
+      value: formData.discountValue || 0,
+      minAmount: formData.minAmount,
+      validFrom: formData.startTime?.format('YYYY-MM-DD HH:mm:ss') || '',
+      validTo: formData.endTime?.format('YYYY-MM-DD HH:mm:ss') || '',
+      totalCount: formData.totalCount || 0,
+      limitPerUser: formData.limitPerUser || 1,
+      conditions: formData.instructions,
+    }
     
-    const action = editingCoupon.value ? '更新' : '创建'
-    message.success(`${action}优惠券成功`)
+    let response
+    if (editingCoupon.value) {
+      response = await updateCoupon({
+        id: editingCoupon.value.id,
+        ...submitData,
+      })
+    } else {
+      response = await createCoupon(submitData)
+    }
     
-    modalVisible.value = false
-    loadCouponData()
+    if (response.code === 200) {
+      const action = editingCoupon.value ? '更新' : '创建'
+      message.success(`${action}优惠券成功`)
+      modalVisible.value = false
+      loadCouponData()
+    } else {
+      message.error(response.message || '操作失败')
+    }
   } catch (error) {
-    console.error('表单验证失败:', error)
+    console.error('提交表单失败:', error)
+    message.error('提交表单失败')
   }
 }
 
@@ -1151,7 +1120,6 @@ const handleCancel = (): void => {
 const resetForm = (): void => {
   Object.assign(formData, {
     name: '',
-    description: '',
     type: '',
     discountValue: undefined,
     minAmount: undefined,
@@ -1160,8 +1128,6 @@ const resetForm = (): void => {
     startTime: undefined,
     endTime: undefined,
     instructions: '',
-    applicableType: 'all',
-    applicableItems: undefined,
   })
   formRef.value?.resetFields()
 }

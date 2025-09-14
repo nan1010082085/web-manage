@@ -618,6 +618,29 @@ import {
 import type { MenuInfo } from 'ant-design-vue/es/menu/src/interface'
 import dayjs from 'dayjs'
 import { debounce, filter, get, truncate, trim, isString, isNumber } from 'lodash-es'
+import type {
+  HelpArticle,
+  FAQ,
+  APIDoc,
+  Video,
+  DownloadResource,
+  SupportTicket,
+  GettingStartedStep,
+  UserGuide,
+  QuickAccess,
+  CreateSupportTicketParams
+} from '@/mock/help'
+import {
+  searchHelpArticles,
+  getFAQList,
+  getAPIDocList,
+  getVideoList,
+  getDownloadResourceList,
+  createSupportTicket,
+  likeHelpArticle,
+  likeFAQ,
+  dislikeFAQ
+} from '@/api/help'
 
 // 创建防抖搜索函数
 const createDebouncedSearch = <T extends (...args: any[]) => any>(
@@ -628,28 +651,6 @@ const createDebouncedSearch = <T extends (...args: any[]) => any>(
 }
 
 // 搜索过滤器
-const searchFilter = <T extends Record<string, any>>(
-  items: T[],
-  searchText: string,
-  searchFields: (keyof T)[]
-): T[] => {
-  if (!searchText || !searchText.trim()) return items
-
-  const lowerSearchText = searchText.toLowerCase().trim()
-  
-  return filter(items, (item) => {
-    return searchFields.some((field) => {
-      const value = get(item, field as string)
-      if (isString(value)) {
-        return value.toLowerCase().includes(lowerSearchText)
-      }
-      if (isNumber(value)) {
-        return value.toString().includes(lowerSearchText)
-      }
-      return false
-    })
-  })
-}
 
 // 安全获取对象属性值
 const safeGet = <T, R = any>(
@@ -674,91 +675,12 @@ const formatText = (
  * 帮助中心页面
  */
 
-interface HelpArticle {
-  id: string
-  title: string
-  summary: string
-  content: string
-  category: string
-  views: number
-  likes: number
-  dislikes?: number
-  liked?: boolean
-  disliked?: boolean
-  updatedAt: string
-  createdAt: string
-}
-
-interface FAQ {
-  id: string
-  question: string
-  answer: string
-  likes: number
-  dislikes: number
-  liked?: boolean
-  disliked?: boolean
-}
-
-interface APIDoc {
-  id: string
-  title: string
-  path: string
-  method: string
-  description: string
-  status: string
-}
-
-interface Video {
-  id: string
-  title: string
-  description: string
-  url: string
-  thumbnail: string
-  duration: string
-  views: number
-  createdAt: string
-}
-
-interface DownloadResource {
-  id: string
-  title: string
-  description: string
-  type: string
-  size: string
-  downloads: number
-  url: string
-  updatedAt: string
-}
-
 interface SupportForm {
   type: string
   priority: string
   title: string
   description: string
-  attachments: any[]
-}
-
-interface GettingStartedStep {
-  id: string
-  title: string
-  description: string
-  icon: string
-}
-
-interface UserGuide {
-  id: string
-  title: string
-  description: string
-  icon: string
-  articles: number
-}
-
-interface QuickAccess {
-  id: string
-  title: string
-  description: string
-  icon: string
-  action: string
+  attachments: string[]
 }
 
 // 响应式数据
@@ -860,137 +782,19 @@ const userGuides = ref<UserGuide[]>([
 ])
 
 // 常见问题
-const faqs = ref<FAQ[]>([
-  {
-    id: '1',
-    question: '如何重置密码？',
-    answer: '您可以在登录页面点击"忘记密码"链接，输入您的邮箱地址，系统会发送重置密码的邮件到您的邮箱。',
-    likes: 25,
-    dislikes: 2,
-    liked: false,
-    disliked: false,
-  },
-  {
-    id: '2',
-    question: '如何修改个人信息？',
-    answer: '登录后点击右上角头像，选择"个人中心"，在基本信息页面可以修改您的个人信息。',
-    likes: 18,
-    dislikes: 1,
-    liked: false,
-    disliked: false,
-  },
-  {
-    id: '3',
-    question: '支持哪些支付方式？',
-    answer: '我们支持支付宝、微信支付、银行卡支付等多种支付方式，具体可在支付页面查看。',
-    likes: 32,
-    dislikes: 0,
-    liked: false,
-    disliked: false,
-  },
-])
+const faqs = ref<FAQ[]>([])
 
 // API文档
-const apiDocs = ref<APIDoc[]>([
-  {
-    id: '1',
-    title: '用户认证',
-    path: '/api/auth/login',
-    method: 'POST',
-    description: '用户登录接口',
-    status: 'stable',
-  },
-  {
-    id: '2',
-    title: '获取用户信息',
-    path: '/api/user/profile',
-    method: 'GET',
-    description: '获取当前用户的详细信息',
-    status: 'stable',
-  },
-  {
-    id: '3',
-    title: '创建订单',
-    path: '/api/orders',
-    method: 'POST',
-    description: '创建新的订单',
-    status: 'beta',
-  },
-])
+const apiDocs = ref<APIDoc[]>([])
 
 // 视频教程
-const videos = ref<Video[]>([
-  {
-    id: '1',
-    title: '系统概览介绍',
-    description: '了解系统的主要功能和界面布局',
-    url: '/videos/overview.mp4',
-    thumbnail: '/images/video-thumb-1.jpg',
-    duration: '05:30',
-    views: 1250,
-    createdAt: '2024-01-10',
-  },
-  {
-    id: '2',
-    title: '订单管理教程',
-    description: '学习如何创建和管理订单',
-    url: '/videos/orders.mp4',
-    thumbnail: '/images/video-thumb-2.jpg',
-    duration: '08:45',
-    views: 980,
-    createdAt: '2024-01-08',
-  },
-])
+const videos = ref<Video[]>([])
 
 // 下载资源
-const downloadResources = ref<DownloadResource[]>([
-  {
-    id: '1',
-    title: '用户手册',
-    description: '完整的用户操作手册PDF版本',
-    type: 'pdf',
-    size: '2.5MB',
-    downloads: 1520,
-    url: '/downloads/user-manual.pdf',
-    updatedAt: '2024-01-15',
-  },
-  {
-    id: '2',
-    title: 'API文档',
-    description: '开发者API接口文档',
-    type: 'zip',
-    size: '1.8MB',
-    downloads: 680,
-    url: '/downloads/api-docs.zip',
-    updatedAt: '2024-01-12',
-  },
-])
+const downloadResources = ref<DownloadResource[]>([])
 
 // 热门文章
-const popularArticles = ref<HelpArticle[]>([
-  {
-    id: '1',
-    title: '快速入门指南',
-    summary: '帮助新用户快速了解和使用系统的基本功能',
-    content: '<h3>快速入门指南</h3><p>欢迎使用我们的系统...</p>',
-    category: 'getting-started',
-    views: 2580,
-    likes: 45,
-    updatedAt: '2024-01-15',
-    createdAt: '2024-01-01',
-  },
-  {
-    id: '2',
-    title: '订单管理最佳实践',
-    summary: '介绍订单管理的最佳实践和常见问题解决方案',
-    content: '<h3>订单管理最佳实践</h3><p>订单管理是系统的核心功能...</p>',
-    category: 'user-guide',
-    views: 1890,
-    likes: 32,
-    updatedAt: '2024-01-14',
-    createdAt: '2024-01-05',
-  },
-])
+const popularArticles = ref<HelpArticle[]>([])
 
 // 快捷入口
 const quickAccess = ref<QuickAccess[]>([
@@ -1034,23 +838,61 @@ const handleCategoryClick = (info: MenuInfo): void => {
 }
 
 /**
+ * 加载帮助数据
+ */
+const loadHelpData = async (): Promise<void> => {
+  try {
+    const [faqResponse, apiResponse, videoResponse, downloadResponse] = await Promise.all([
+      getFAQList(),
+      getAPIDocList(),
+      getVideoList(),
+      getDownloadResourceList(),
+    ])
+    
+    if (faqResponse.code === 200) {
+      faqs.value = faqResponse.data
+    }
+    
+    if (apiResponse.code === 200) {
+      apiDocs.value = apiResponse.data
+    }
+    
+    if (videoResponse.code === 200) {
+      videos.value = videoResponse.data
+    }
+    
+    if (downloadResponse.code === 200) {
+      downloadResources.value = downloadResponse.data
+    }
+  } catch (error) {
+    console.error('加载帮助数据失败:', error)
+    message.error('加载帮助数据失败')
+  }
+}
+
+/**
  * 搜索处理
  */
-const handleSearch = createDebouncedSearch((keyword: string): void => {
+const handleSearch = createDebouncedSearch(async (keyword: string): Promise<void> => {
   if (!keyword.trim()) {
     showSearchResults.value = false
     return
   }
   
-  // 使用 lodash 搜索过滤器
-  searchResults.value = searchFilter(
-    popularArticles.value,
-    keyword,
-    ['title', 'summary']
-  )
-  
-  showSearchResults.value = true
-  message.success(`找到 ${searchResults.value.length} 个相关结果`)
+  try {
+    const response = await searchHelpArticles({ keyword })
+    
+    if (response.code === 200) {
+      searchResults.value = response.data.list
+      showSearchResults.value = true
+      message.success(`找到 ${response.data.total} 个相关结果`)
+    } else {
+      message.error(response.message || '搜索失败')
+    }
+  } catch (error) {
+    console.error('搜索失败:', error)
+    message.error('搜索失败')
+  }
 }, 300)
 
 /**
@@ -1191,68 +1033,108 @@ const downloadResource = (resource: DownloadResource): void => {
 /**
  * 点赞FAQ
  */
-const likeFaq = (faqId: string): void => {
+const likeFaq = async (faqId: string): Promise<void> => {
   const faq = faqs.value.find(f => f.id === faqId)
-  if (faq) {
-    if (faq.liked) {
-      faq.likes--
-      faq.liked = false
-    } else {
+  if (!faq) return
+  
+  if (faq.liked) {
+    message.warning('您已经点过赞了')
+    return
+  }
+  
+  try {
+    const response = await likeFAQ(faqId)
+    
+    if (response.code === 200) {
       faq.likes++
       faq.liked = true
       if (faq.disliked) {
         faq.dislikes!--
         faq.disliked = false
       }
+      message.success('点赞成功')
+    } else {
+      message.error(response.message || '点赞失败')
     }
+  } catch (error) {
+    console.error('点赞失败:', error)
+    message.error('点赞失败')
   }
 }
 
 /**
  * 踩FAQ
  */
-const dislikeFaq = (faqId: string): void => {
+const dislikeFaq = async (faqId: string): Promise<void> => {
   const faq = faqs.value.find(f => f.id === faqId)
-  if (faq) {
-    if (faq.disliked) {
-      faq.dislikes!--
-      faq.disliked = false
-    } else {
+  if (!faq) return
+  
+  if (faq.disliked) {
+    message.warning('您已经点过踩了')
+    return
+  }
+  
+  try {
+    const response = await dislikeFAQ(faqId)
+    
+    if (response.code === 200) {
       faq.dislikes!++
       faq.disliked = true
       if (faq.liked) {
         faq.likes--
         faq.liked = false
       }
+      message.success('已记录您的反馈')
+    } else {
+      message.error(response.message || '反馈失败')
     }
+  } catch (error) {
+    console.error('反馈失败:', error)
+    message.error('反馈失败')
   }
 }
 
 /**
  * 点赞文章
  */
-const likeArticle = (articleId: string): void => {
+const likeArticle = async (articleId: string): Promise<void> => {
   const article = currentArticle.value
-  if (article && article.id === articleId) {
-    if (article.liked) {
-      article.likes--
-      article.liked = false
+  if (!article || article.id !== articleId) return
+  
+  try {
+    const response = await likeHelpArticle(articleId)
+    
+    if (response.code === 200) {
+      if (article.liked) {
+        article.likes--
+        article.liked = false
+      } else {
+        article.likes++
+        article.liked = true
+      }
+      message.success('操作成功')
     } else {
-      article.likes++
-      article.liked = true
+      message.error(response.message || '操作失败')
     }
+  } catch (error) {
+    console.error('操作失败:', error)
+    message.error('操作失败')
   }
 }
 
 /**
  * 分享文章
  */
-const shareArticle = (article: HelpArticle): void => {
-  // 复制链接到剪贴板
-  const url = `${window.location.origin}/help/article/${article.id}`
-  navigator.clipboard.writeText(url).then(() => {
+const shareArticle = async (article: HelpArticle): Promise<void> => {
+  try {
+    // TODO: 实现文章分享功能
+    const url = `${window.location.origin}/help/article/${article.id}`
+    await navigator.clipboard.writeText(url)
     message.success('链接已复制到剪贴板')
-  })
+  } catch (error) {
+    console.error('分享失败:', error)
+    message.error('分享失败')
+  }
 }
 
 /**
@@ -1338,21 +1220,25 @@ const submitSupportTicket = async (): Promise<void> => {
   supportSubmitting.value = true
   
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const response = await createSupportTicket(supportForm)
     
-    message.success('工单提交成功，我们会尽快处理')
-    supportModalVisible.value = false
-    
-    // 重置表单
-    Object.assign(supportForm, {
-      type: '',
-      priority: 'medium',
-      title: '',
-      description: '',
-      attachments: [],
-    })
-  } catch (__error) {
+    if (response.code === 200) {
+      message.success('工单提交成功，我们会尽快处理')
+      supportModalVisible.value = false
+      
+      // 重置表单
+      Object.assign(supportForm, {
+        type: '',
+        priority: 'medium',
+        title: '',
+        description: '',
+        attachments: [],
+      })
+    } else {
+      message.error(response.message || '工单提交失败')
+    }
+  } catch (error) {
+    console.error('工单提交失败:', error)
     message.error('工单提交失败，请重试')
   } finally {
     supportSubmitting.value = false
@@ -1369,13 +1255,19 @@ const openLiveChat = (): void => {
 /**
  * 刷新帮助
  */
-const refreshHelp = (): void => {
-  message.success('帮助内容已刷新')
+const refreshHelp = async (): Promise<void> => {
+  try {
+    await loadHelpData()
+    message.success('帮助内容已刷新')
+  } catch (error) {
+    console.error('刷新失败:', error)
+    message.error('刷新失败')
+  }
 }
 
 // 组件挂载时加载数据
 onMounted(() => {
-  // 初始化数据已在响应式变量中定义
+  loadHelpData()
 })
 </script>
 

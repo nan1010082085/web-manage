@@ -221,7 +221,7 @@
                     <a-menu-divider />
                     <a-menu-item
                       key="delete"
-                      @click="deleteProduct(record.id)"
+                      @click="deleteProductAction(record.id)"
                       class="text-red-500"
                     >
                       <DeleteOutlined /> 删除
@@ -413,25 +413,24 @@ import {
   MoreOutlined,
 } from '@ant-design/icons-vue'
 import type { TableColumnsType, FormInstance, UploadFile } from 'ant-design-vue'
+import type { ProductInfo } from '@/mock/product'
+import {
+  getProductList,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  batchDeleteProducts,
+  updateProductStock,
+} from '@/api/product'
 
 /**
  * 商品管理页面
  */
 
 // 商品接口定义
-interface Product {
-  id?: string
-  name: string
-  code: string
-  category: string
-  price: number
-  originalPrice?: number
-  stock: number
-  weight?: number
-  status: 'active' | 'inactive' | 'draft'
-  image: string
-  description?: string
-  createTime: string
+interface Product extends ProductInfo {
+  /** 是否选中 */
+  checked?: boolean
 }
 
 // 响应式数据
@@ -534,7 +533,7 @@ const formData = reactive<Partial<Product>>({
   stock: 0,
   weight: 0,
   status: 'draft',
-  image: '',
+  images: '',
   description: '',
 })
 
@@ -656,57 +655,27 @@ const getStatusText = (status: string) => {
 const loadProductList = async () => {
   loading.value = true
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    const params = {
+      page: pagination.current,
+      pageSize: pagination.pageSize,
+      name: searchForm.name,
+      code: searchForm.code,
+      category: searchForm.category,
+      status: searchForm.status,
+      minPrice: searchForm.minPrice,
+      maxPrice: searchForm.maxPrice,
+    }
 
-    // 模拟数据
-    const mockData: Product[] = [
-      {
-        id: '1',
-        name: 'iPhone 15 Pro',
-        code: 'IP15P001',
-        category: 'electronics',
-        price: 7999,
-        originalPrice: 8999,
-        stock: 50,
-        weight: 0.2,
-        status: 'active',
-        image: 'https://via.placeholder.com/60x60?text=iPhone',
-        description: '最新款iPhone 15 Pro，搭载A17 Pro芯片',
-        createTime: '2024-01-01 10:00:00',
-      },
-      {
-        id: '2',
-        name: '春季新款连衣裙',
-        code: 'CLO001',
-        category: 'clothing',
-        price: 299,
-        originalPrice: 399,
-        stock: 8,
-        weight: 0.3,
-        status: 'active',
-        image: 'https://via.placeholder.com/60x60?text=Dress',
-        description: '时尚春季连衣裙，舒适面料',
-        createTime: '2024-01-02 10:00:00',
-      },
-      {
-        id: '3',
-        name: 'Vue.js设计与实现',
-        code: 'BOOK001',
-        category: 'books',
-        price: 89,
-        stock: 100,
-        weight: 0.5,
-        status: 'active',
-        image: 'https://via.placeholder.com/60x60?text=Book',
-        description: '深入理解Vue.js框架设计原理',
-        createTime: '2024-01-03 10:00:00',
-      },
-    ]
+    const response = await getProductList(params)
 
-    productList.value = mockData
-    pagination.total = mockData.length
+    if (response.code === 200) {
+      productList.value = response.data.list
+      pagination.total = response.data.total
+    } else {
+      message.error(response.message || '加载商品列表失败')
+    }
   } catch (error) {
+    console.error('加载商品列表失败:', error)
     message.error('加载商品列表失败')
   } finally {
     loading.value = false
@@ -790,14 +759,36 @@ const handleModalOk = async () => {
     await formRef.value?.validate()
     modalLoading.value = true
 
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    const productData = {
+      name: formData.name,
+      code: formData.code,
+      category: formData.category,
+      price: formData.price,
+      originalPrice: formData.originalPrice,
+      stock: formData.stock,
+      weight: formData.weight,
+      status: formData.status,
+      images: formData.images,
+      description: formData.description,
+    }
 
-    message.success(formData.id ? '编辑成功' : '新增成功')
-    modalVisible.value = false
-    loadProductList()
+    let response
+    if (formData.id) {
+      response = await updateProduct(formData.id, productData)
+    } else {
+      response = await createProduct(productData)
+    }
+
+    if (response.code === 200) {
+      message.success(formData.id ? '编辑成功' : '新增成功')
+      modalVisible.value = false
+      loadProductList()
+    } else {
+      message.error(response.message || '操作失败')
+    }
   } catch (error) {
-    console.error('表单验证失败:', error)
+    console.error('操作失败:', error)
+    message.error('操作失败')
   } finally {
     modalLoading.value = false
   }
@@ -823,7 +814,7 @@ const viewProduct = (record: Product) => {
  */
 const copyProduct = (record: Product) => {
   const newProduct = { ...record }
-  delete newProduct.id
+  Reflect.defineProperty(newProduct, 'id', { value: undefined })
   newProduct.name = `${record.name} - 副本`
   newProduct.code = `${record.code}_COPY`
   newProduct.status = 'draft'
@@ -855,9 +846,6 @@ const handleStockModalOk = async () => {
   try {
     stockModalLoading.value = true
 
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
     let newStock = currentProduct.value.stock
 
     switch (stockOperation.value) {
@@ -872,11 +860,17 @@ const handleStockModalOk = async () => {
         break
     }
 
-    currentProduct.value.stock = newStock
+    const response = await updateProductStock(currentProduct.value.id!, newStock)
 
-    message.success('库存更新成功')
-    stockModalVisible.value = false
+    if (response.code === 200) {
+      currentProduct.value.stock = newStock
+      message.success('库存更新成功')
+      stockModalVisible.value = false
+    } else {
+      message.error(response.message || '库存更新失败')
+    }
   } catch (error) {
+    console.error('库存更新失败:', error)
     message.error('库存更新失败')
   } finally {
     stockModalLoading.value = false
@@ -886,21 +880,20 @@ const handleStockModalOk = async () => {
 /**
  * 删除商品
  */
-const deleteProduct = async (id: string) => {
+const deleteProductAction = async (id: string) => {
   try {
     loading.value = true
 
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    const response = await deleteProduct(id)
 
-    const index = productList.value.findIndex((product) => product.id === id)
-    if (index > -1) {
-      productList.value.splice(index, 1)
-      pagination.total--
+    if (response.code === 200) {
+      message.success('删除成功')
+      loadProductList()
+    } else {
+      message.error(response.message || '删除失败')
     }
-
-    message.success('删除成功')
   } catch (error) {
+    console.error('删除失败:', error)
     message.error('删除失败')
   } finally {
     loading.value = false
@@ -919,18 +912,18 @@ const batchDelete = async () => {
   try {
     loading.value = true
 
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    const response = await batchDeleteProducts(selectedRowKeys.value as string[])
 
-    productList.value = productList.value.filter(
-      (item) => item.id && !selectedRowKeys.value.includes(item.id),
-    )
-    pagination.total -= selectedRowKeys.value.length
-    selectedRowKeys.value = []
-    updateSelectAllState()
-
-    message.success('批量删除成功')
+    if (response.code === 200) {
+      message.success('批量删除成功')
+      selectedRowKeys.value = []
+      updateSelectAllState()
+      loadProductList()
+    } else {
+      message.error(response.message || '批量删除失败')
+    }
   } catch (error) {
+    console.error('批量删除失败:', error)
     message.error('批量删除失败')
   } finally {
     loading.value = false

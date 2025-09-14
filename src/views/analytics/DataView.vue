@@ -439,7 +439,6 @@ import { dataAnalysisChartConfigs as chartConfigs } from '@/config/charts/chartC
 import type { Options } from 'highcharts'
 import type * as Highcharts from 'highcharts'
 import dayjs, { type Dayjs } from 'dayjs'
-import { omit } from 'lodash-es'
 import 'highcharts/modules/heatmap'
 import type {
   DataOverview,
@@ -453,8 +452,6 @@ import type {
   BarChartPeriod,
   AreaChartType,
   HeatmapMetric,
-  TableDataItem,
-  DateRange,
 } from './types'
 
 /**
@@ -1054,7 +1051,7 @@ const refreshHeatmap = async (): Promise<void> => {
 const loadOverviewData = async (): Promise<void> => {
   try {
     const response = await getOverviewData()
-    overview.value = response.data
+    overview.value = response.data as DataOverview
   } catch (error) {
     message.error('加载概览数据失败')
     console.error('概览数据加载错误:', error)
@@ -1068,7 +1065,7 @@ const loadRealtimeData = async (): Promise<void> => {
   try {
     // 实时数据现在从getOverviewData中获取，这里只更新时间戳
     const response = await getRealtimeData()
-    realtimeData.value = response.data
+    realtimeData.value = response.data as RealtimeData
     lastUpdateTime.value = dayjs().format('HH:mm:ss')
   } catch (error) {
     console.error('加载实时数据失败:', error)

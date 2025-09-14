@@ -172,8 +172,10 @@
             </a-select>
           </a-form-item>
           <a-form-item label="创建时间">
-            <a-range-picker
+            <OptimizedRangePicker
               v-model:value="searchForm.dateRange"
+              :show-presets="true"
+              :max-range="365"
               @change="handleSearch"
             />
           </a-form-item>
@@ -617,6 +619,7 @@ import {
 import type { TableColumnsType, TableProps, FormInstance } from 'ant-design-vue'
 import { debounce } from 'lodash-es'
 import dayjs, { type Dayjs } from 'dayjs'
+import OptimizedRangePicker from '@/components/common/OptimizedRangePicker.vue'
 
 /**
  * 报表管理页面

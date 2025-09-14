@@ -4,18 +4,32 @@
 
 import { apiGet, apiPost, apiPut, apiDelete } from './index'
 import {
-  mockGetProductList,
-  mockGetProductDetail,
-  mockGetProductCategories,
-  mockGetProductBrands,
-  mockCreateProduct,
-  mockUpdateProduct,
-  mockDeleteProduct,
   type ProductInfo,
   type ProductCategory,
   type ProductListParams,
+  mockGetProductList,
+  mockGetProductDetail,
+  mockCreateProduct,
+  mockUpdateProduct,
+  mockDeleteProduct,
+  mockBatchDeleteProducts,
+  mockGetProductCategories,
+  mockGetProductBrands,
+  mockCreateProductCategory,
+  mockUpdateProductCategory,
+  mockDeleteProductCategory,
+  mockUploadProductImage,
+  mockBatchUploadProductImages,
+  mockUpdateProductStock,
+  mockUpdateProductStatus,
+  mockGetProductSalesStats,
+  mockGetHotProducts,
+  mockGetRecommendedProducts,
 } from '@/mock/product'
 import type { ApiResponse, PaginationResponse } from './index'
+
+// 重新导出类型
+export type { ProductInfo, ProductCategory, ProductListParams } from '@/mock/product'
 
 /**
  * 获取产品列表
@@ -25,7 +39,11 @@ import type { ApiResponse, PaginationResponse } from './index'
 export const getProductList = (
   params?: ProductListParams,
 ): Promise<ApiResponse<PaginationResponse<ProductInfo>>> => {
-  return apiGet<PaginationResponse<ProductInfo>>('/product/list', params, mockGetProductList)
+  return apiGet<PaginationResponse<ProductInfo>>(
+    '/products',
+    params as Record<string, unknown>,
+    () => mockGetProductList(params),
+  )
 }
 
 /**
@@ -34,7 +52,7 @@ export const getProductList = (
  * @returns 产品详情
  */
 export const getProductDetail = (productId: string): Promise<ApiResponse<ProductInfo>> => {
-  return apiGet<ProductInfo>(`/product/${productId}`, undefined, () =>
+  return apiGet<ProductInfo>(`/products/${productId}`, undefined, () =>
     mockGetProductDetail(productId),
   )
 }
@@ -47,7 +65,7 @@ export const getProductDetail = (productId: string): Promise<ApiResponse<Product
 export const createProduct = (
   productData: Partial<ProductInfo>,
 ): Promise<ApiResponse<ProductInfo>> => {
-  return apiPost<ProductInfo>('/product', productData, () => mockCreateProduct(productData))
+  return apiPost<ProductInfo>('/products', productData, () => mockCreateProduct(productData))
 }
 
 /**
@@ -60,7 +78,7 @@ export const updateProduct = (
   productId: string,
   productData: Partial<ProductInfo>,
 ): Promise<ApiResponse<ProductInfo>> => {
-  return apiPut<ProductInfo>(`/product/${productId}`, productData, () =>
+  return apiPut<ProductInfo>(`/products/${productId}`, productData, () =>
     mockUpdateProduct(productId, productData),
   )
 }
@@ -71,7 +89,7 @@ export const updateProduct = (
  * @returns 删除结果
  */
 export const deleteProduct = (productId: string): Promise<ApiResponse<null>> => {
-  return apiDelete<null>(`/product/${productId}`, undefined, () => mockDeleteProduct(productId))
+  return apiDelete<null>(`/products/${productId}`, undefined, () => mockDeleteProduct(productId))
 }
 
 /**
@@ -80,7 +98,9 @@ export const deleteProduct = (productId: string): Promise<ApiResponse<null>> => 
  * @returns 删除结果
  */
 export const batchDeleteProducts = (productIds: string[]): Promise<ApiResponse<null>> => {
-  return apiDelete<null>('/product/batch', { ids: productIds })
+  return apiPost<null>('/products/batch-delete', { productIds }, () =>
+    mockBatchDeleteProducts(productIds),
+  )
 }
 
 /**
@@ -88,7 +108,9 @@ export const batchDeleteProducts = (productIds: string[]): Promise<ApiResponse<n
  * @returns 分类列表
  */
 export const getProductCategories = (): Promise<ApiResponse<ProductCategory[]>> => {
-  return apiGet<ProductCategory[]>('/product/categories', undefined, mockGetProductCategories)
+  return apiGet<ProductCategory[]>('/products/categories', undefined, () =>
+    mockGetProductCategories(),
+  )
 }
 
 /**
@@ -96,7 +118,7 @@ export const getProductCategories = (): Promise<ApiResponse<ProductCategory[]>> 
  * @returns 品牌列表
  */
 export const getProductBrands = (): Promise<ApiResponse<string[]>> => {
-  return apiGet<string[]>('/product/brands', undefined, mockGetProductBrands)
+  return apiGet<string[]>('/products/brands', undefined, () => mockGetProductBrands())
 }
 
 /**
@@ -107,7 +129,9 @@ export const getProductBrands = (): Promise<ApiResponse<string[]>> => {
 export const createProductCategory = (
   categoryData: Partial<ProductCategory>,
 ): Promise<ApiResponse<ProductCategory>> => {
-  return apiPost<ProductCategory>('/product/category', categoryData)
+  return apiPost<ProductCategory>('/products/categories', categoryData, () =>
+    mockCreateProductCategory(categoryData),
+  )
 }
 
 /**
@@ -120,7 +144,9 @@ export const updateProductCategory = (
   categoryId: string,
   categoryData: Partial<ProductCategory>,
 ): Promise<ApiResponse<ProductCategory>> => {
-  return apiPut<ProductCategory>(`/product/category/${categoryId}`, categoryData)
+  return apiPut<ProductCategory>(`/products/categories/${categoryId}`, categoryData, () =>
+    mockUpdateProductCategory(categoryId, categoryData),
+  )
 }
 
 /**
@@ -129,7 +155,9 @@ export const updateProductCategory = (
  * @returns 删除结果
  */
 export const deleteProductCategory = (categoryId: string): Promise<ApiResponse<null>> => {
-  return apiDelete<null>(`/product/category/${categoryId}`)
+  return apiDelete<null>(`/products/categories/${categoryId}`, undefined, () =>
+    mockDeleteProductCategory(categoryId),
+  )
 }
 
 /**
@@ -138,10 +166,9 @@ export const deleteProductCategory = (categoryId: string): Promise<ApiResponse<n
  * @returns 上传结果
  */
 export const uploadProductImage = (file: File): Promise<ApiResponse<{ url: string }>> => {
-  const formData = new FormData()
-  formData.append('file', file)
-
-  return apiPost<{ url: string }>('/product/upload', formData)
+  return apiPost<{ url: string }>('/products/upload-image', { file }, () =>
+    mockUploadProductImage(file),
+  )
 }
 
 /**
@@ -152,12 +179,9 @@ export const uploadProductImage = (file: File): Promise<ApiResponse<{ url: strin
 export const batchUploadProductImages = (
   files: File[],
 ): Promise<ApiResponse<{ urls: string[] }>> => {
-  const formData = new FormData()
-  files.forEach((file, index) => {
-    formData.append(`files[${index}]`, file)
-  })
-
-  return apiPost<{ urls: string[] }>('/product/upload/batch', formData)
+  return apiPost<{ urls: string[] }>('/products/batch-upload-images', { files }, () =>
+    mockBatchUploadProductImages(files),
+  )
 }
 
 /**
@@ -170,7 +194,9 @@ export const updateProductStock = (
   productId: string,
   stock: number,
 ): Promise<ApiResponse<null>> => {
-  return apiPut<null>(`/product/${productId}/stock`, { stock })
+  return apiPut<null>(`/products/${productId}/stock`, { stock }, () =>
+    mockUpdateProductStock(productId, stock),
+  )
 }
 
 /**
@@ -183,7 +209,9 @@ export const updateProductStatus = (
   productId: string,
   status: 'active' | 'inactive' | 'draft',
 ): Promise<ApiResponse<null>> => {
-  return apiPut<null>(`/product/${productId}/status`, { status })
+  return apiPut<null>(`/products/${productId}/status`, { status }, () =>
+    mockUpdateProductStatus(productId, status),
+  )
 }
 
 /**
@@ -195,8 +223,18 @@ export const updateProductStatus = (
 export const getProductSalesStats = (
   productId: string,
   dateRange?: { startDate: string; endDate: string },
-): Promise<ApiResponse<any>> => {
-  return apiGet<any>(`/product/${productId}/stats`, dateRange)
+): Promise<
+  ApiResponse<{
+    totalSales: number
+    totalRevenue: number
+    salesTrend: Array<{ date: string; sales: number; revenue: number }>
+  }>
+> => {
+  return apiGet<{
+    totalSales: number
+    totalRevenue: number
+    salesTrend: Array<{ date: string; sales: number; revenue: number }>
+  }>(`/products/${productId}/sales-stats`, dateRange, () => mockGetProductSalesStats(productId))
 }
 
 /**
@@ -205,7 +243,7 @@ export const getProductSalesStats = (
  * @returns 热销产品列表
  */
 export const getHotProducts = (limit: number = 10): Promise<ApiResponse<ProductInfo[]>> => {
-  return apiGet<ProductInfo[]>('/product/hot', { limit })
+  return apiGet<ProductInfo[]>('/products/hot', { limit }, () => mockGetHotProducts(limit))
 }
 
 /**
@@ -218,5 +256,7 @@ export const getRecommendedProducts = (
   productId: string,
   limit: number = 10,
 ): Promise<ApiResponse<ProductInfo[]>> => {
-  return apiGet<ProductInfo[]>(`/product/${productId}/recommended`, { limit })
+  return apiGet<ProductInfo[]>(`/products/${productId}/recommended`, { limit }, () =>
+    mockGetRecommendedProducts(productId, limit),
+  )
 }

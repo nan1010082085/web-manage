@@ -244,6 +244,8 @@ import {
   SafetyOutlined,
   BellOutlined,
 } from '@ant-design/icons-vue'
+import { getUserInfo, updateBasicInfo, changePassword, getActivityLog, uploadAvatar } from '@/api/profile'
+import { getUserLoginRecords, getUserOperationRecords } from '@/api/user'
 
 interface UserInfo {
   id: string
@@ -463,28 +465,20 @@ const initFormData = (): void => {
 const loadLoginHistory = async (): Promise<void> => {
   loginLoading.value = true
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    loginHistory.value = [
-      {
-        id: '1',
-        ip: '192.168.1.100',
-        location: '北京市',
-        device: 'Chrome 120.0.0.0 / Windows 10',
-        status: 'success',
-        loginTime: '2024-01-15 10:30:00',
-      },
-      {
-        id: '2',
-        ip: '192.168.1.101',
-        location: '上海市',
-        device: 'Firefox 121.0.0.0 / macOS',
-        status: 'success',
-        loginTime: '2024-01-14 15:20:00',
-      },
-    ]
-  } catch (__error) {
+    const response = await getUserLoginRecords(userInfo.value.id)
+    if (response.code === 200) {
+      loginHistory.value = response.data.list.map(item => ({
+        id: item.id,
+        ip: item.ip,
+        location: item.location,
+        device: item.device,
+        status: item.status,
+        loginTime: item.loginTime
+      }))
+    } else {
+      message.error(response.message || '加载登录记录失败')
+    }
+  } catch (error) {
     message.error('加载登录记录失败')
   } finally {
     loginLoading.value = false
@@ -497,26 +491,19 @@ const loadLoginHistory = async (): Promise<void> => {
 const loadOperationLog = async (): Promise<void> => {
   operationLoading.value = true
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    operationLog.value = [
-      {
-        id: '1',
-        type: '登录',
-        description: '用户登录系统',
-        ip: '192.168.1.100',
-        operationTime: '2024-01-15 10:30:00',
-      },
-      {
-        id: '2',
-        type: '修改',
-        description: '修改个人资料',
-        ip: '192.168.1.100',
-        operationTime: '2024-01-15 10:35:00',
-      },
-    ]
-  } catch (__error) {
+    const response = await getUserOperationRecords(userInfo.value.id)
+    if (response.code === 200) {
+      operationLog.value = response.data.list.map(item => ({
+        id: item.id,
+        type: item.type,
+        description: item.description,
+        ip: item.ip,
+        operationTime: item.operationTime
+      }))
+    } else {
+      message.error(response.message || '加载操作日志失败')
+    }
+  } catch (error) {
     message.error('加载操作日志失败')
   } finally {
     operationLoading.value = false
@@ -536,10 +523,29 @@ const handleAvatarUpload = (): void => {
 const handleBasicSubmit = async (): Promise<void> => {
   saving.value = true
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    message.success('保存成功')
-  } catch (__error) {
+    const params = {
+      name: basicForm.username,
+      nickname: basicForm.username,
+      email: basicForm.email,
+      phone: basicForm.phone,
+      gender: basicForm.gender || 'other',
+      birthday: basicForm.birthday || '',
+      bio: basicForm.bio || '',
+      address: basicForm.department || ''
+    }
+    
+    const response = await updateBasicInfo(params)
+    if (response.code === 200) {
+      message.success('保存成功')
+      // 更新本地用户信息
+      Object.assign(userInfo.value, {
+        email: basicForm.email,
+        phone: basicForm.phone
+      })
+    } else {
+      message.error(response.message || '保存失败')
+    }
+  } catch (error) {
     message.error('保存失败')
   } finally {
     saving.value = false
@@ -566,17 +572,30 @@ const handleChangePassword = (): void => {
 const handlePasswordSubmit = async (): Promise<void> => {
   try {
     await passwordFormRef.value?.validate()
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    message.success('密码修改成功')
-    passwordModalVisible.value = false
-    Object.assign(passwordForm, {
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    })
-  } catch (__error) {
-    // 验证失败
+    
+    const params = {
+      currentPassword: passwordForm.currentPassword,
+      newPassword: passwordForm.newPassword
+    }
+    
+    const response = await changePassword(params)
+    if (response.code === 200) {
+      message.success('密码修改成功')
+      passwordModalVisible.value = false
+      Object.assign(passwordForm, {
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      })
+    } else {
+      message.error(response.message || '密码修改失败')
+    }
+  } catch (error) {
+    if (error && typeof error === 'object' && 'errorFields' in error) {
+      // 表单验证失败
+      return
+    }
+    message.error('密码修改失败')
   }
 }
 

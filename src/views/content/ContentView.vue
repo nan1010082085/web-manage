@@ -88,7 +88,7 @@
             :color="selectedCategory === category.id ? 'blue' : 'default'"
             :class="{ 'category-tag-active': selectedCategory === category.id }"
             @click="selectCategory(category.id)"
-            style="cursor: pointer; margin-bottom: 8px;"
+            style="cursor: pointer; margin-bottom: 8px"
           >
             <component :is="category.icon" style="margin-right: 4px" />
             {{ category.name }}
@@ -140,10 +140,7 @@
             </a-select>
           </a-form-item>
           <a-form-item label="创建时间">
-            <a-range-picker
-              v-model:value="searchForm.dateRange"
-              @change="handleSearch"
-            />
+            <a-range-picker v-model:value="searchForm.dateRange" @change="handleSearch" />
           </a-form-item>
           <a-form-item>
             <a-space>
@@ -151,9 +148,7 @@
                 <SearchOutlined />
                 搜索
               </a-button>
-              <a-button @click="resetSearch">
-                重置
-              </a-button>
+              <a-button @click="resetSearch"> 重置 </a-button>
             </a-space>
           </a-form-item>
         </a-form>
@@ -165,11 +160,9 @@
       <a-card>
         <template #title>
           <span>内容列表</span>
-          <a-tag color="blue" style="margin-left: 8px">
-            共 {{ pagination.total }} 条
-          </a-tag>
+          <a-tag color="blue" style="margin-left: 8px"> 共 {{ pagination.total }} 条 </a-tag>
         </template>
-        
+
         <template #extra>
           <a-space>
             <a-radio-group v-model:value="viewMode" size="small">
@@ -192,7 +185,7 @@
             </a-button>
           </a-space>
         </template>
-        
+
         <!-- 表格视图 -->
         <a-table
           v-if="viewMode === 'table'"
@@ -215,17 +208,20 @@
                 </div>
               </div>
             </template>
-            
+
             <template v-else-if="column.key === 'type'">
               <a-tag :color="getTypeColor(record.type)">
                 {{ getTypeName(record.type) }}
               </a-tag>
             </template>
-            
+
             <template v-else-if="column.key === 'status'">
-              <a-badge :status="getStatusBadge(record.status)" :text="getStatusText(record.status)" />
+              <a-badge
+                :status="getStatusBadge(record.status)"
+                :text="getStatusText(record.status)"
+              />
             </template>
-            
+
             <template v-else-if="column.key === 'thumbnail'">
               <div class="thumbnail-wrapper">
                 <a-image
@@ -234,29 +230,25 @@
                   :width="60"
                   :height="40"
                   :preview="false"
-                  style="object-fit: cover; border-radius: 4px;"
+                  style="object-fit: cover; border-radius: 4px"
                 />
                 <div v-else class="no-thumbnail">
                   <PictureOutlined />
                 </div>
               </div>
             </template>
-            
+
             <template v-else-if="column.key === 'views'">
               <span>{{ formatNumber(record.views) }}</span>
             </template>
-            
+
             <template v-else-if="column.key === 'actions'">
               <a-space>
-                <a-button type="link" size="small" @click="viewContent(record)">
-                  查看
-                </a-button>
-                <a-button type="link" size="small" @click="editContent(record)">
-                  编辑
-                </a-button>
-                <a-button 
-                  type="link" 
-                  size="small" 
+                <a-button type="link" size="small" @click="viewContent(record)"> 查看 </a-button>
+                <a-button type="link" size="small" @click="editContent(record)"> 编辑 </a-button>
+                <a-button
+                  type="link"
+                  size="small"
                   @click="publishContent(record)"
                   v-if="record.status === 'draft'"
                 >
@@ -297,7 +289,7 @@
             </template>
           </template>
         </a-table>
-        
+
         <!-- 卡片视图 -->
         <div v-else class="card-view">
           <a-row :gutter="[16, 16]">
@@ -310,12 +302,12 @@
                       :src="content.thumbnail"
                       :height="160"
                       :preview="false"
-                      style="object-fit: cover;"
+                      style="object-fit: cover"
                     />
                     <div v-else class="no-cover">
                       <PictureOutlined style="font-size: 48px; color: #d9d9d9" />
                     </div>
-                    
+
                     <div class="card-overlay">
                       <a-space>
                         <a-button type="primary" size="small" @click="viewContent(content)">
@@ -328,7 +320,7 @@
                     </div>
                   </div>
                 </template>
-                
+
                 <template #title>
                   <div class="card-title">
                     <span class="title-text">{{ content.title }}</span>
@@ -337,20 +329,23 @@
                     </a-tag>
                   </div>
                 </template>
-                
+
                 <div class="card-content">
                   <p class="content-summary">{{ content.summary || '暂无摘要' }}</p>
-                  
+
                   <div class="content-tags">
                     <a-tag v-if="content.isTop" color="red" size="small">置顶</a-tag>
                     <a-tag v-if="content.isHot" color="orange" size="small">热门</a-tag>
                     <a-tag v-if="content.isRecommend" color="green" size="small">推荐</a-tag>
                   </div>
-                  
+
                   <div class="content-meta">
                     <div class="meta-item">
                       <span class="meta-label">状态:</span>
-                      <a-badge :status="getStatusBadge(content.status)" :text="getStatusText(content.status)" />
+                      <a-badge
+                        :status="getStatusBadge(content.status)"
+                        :text="getStatusText(content.status)"
+                      />
                     </div>
                     <div class="meta-item">
                       <span class="meta-label">作者:</span>
@@ -365,26 +360,24 @@
                       <span>{{ content.updateTime }}</span>
                     </div>
                   </div>
-                  
+
                   <div class="card-actions">
-                    <a-button 
-                      type="primary" 
-                      size="small" 
+                    <a-button
+                      type="primary"
+                      size="small"
                       @click="publishContent(content)"
                       v-if="content.status === 'draft'"
                     >
                       <GlobalOutlined />
                       发布
                     </a-button>
-                    <a-button size="small" @click="editContent(content)">
-                      编辑内容
-                    </a-button>
+                    <a-button size="small" @click="editContent(content)"> 编辑内容 </a-button>
                   </div>
                 </div>
               </a-card>
             </a-col>
           </a-row>
-          
+
           <!-- 卡片视图分页 -->
           <div class="card-pagination">
             <a-pagination
@@ -408,13 +401,10 @@
       width="1000px"
       @ok="handleCreateSubmit"
       @cancel="handleCreateCancel"
-     ok-text="确定" cancel-text="取消">
-      <a-form
-        ref="createFormRef"
-        :model="createForm"
-        :rules="createRules"
-        layout="vertical"
-      >
+      ok-text="确定"
+      cancel-text="取消"
+    >
+      <a-form ref="createFormRef" :model="createForm" :rules="createRules" layout="vertical">
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="内容标题" name="title">
@@ -433,15 +423,11 @@
             </a-form-item>
           </a-col>
         </a-row>
-        
+
         <a-form-item label="内容摘要">
-          <a-textarea
-            v-model:value="createForm.summary"
-            placeholder="请输入内容摘要"
-            :rows="3"
-          />
+          <a-textarea v-model:value="createForm.summary" placeholder="请输入内容摘要" :rows="3" />
         </a-form-item>
-        
+
         <a-form-item label="缩略图">
           <a-upload
             v-model:file-list="createForm.thumbnailList"
@@ -456,15 +442,11 @@
             </div>
           </a-upload>
         </a-form-item>
-        
+
         <a-form-item label="内容正文" name="content">
-          <a-textarea
-            v-model:value="createForm.content"
-            placeholder="请输入内容正文"
-            :rows="10"
-          />
+          <a-textarea v-model:value="createForm.content" placeholder="请输入内容正文" :rows="10" />
         </a-form-item>
-        
+
         <a-form-item label="SEO设置">
           <a-row :gutter="16">
             <a-col :span="12">
@@ -481,24 +463,16 @@
             style="margin-top: 8px"
           />
         </a-form-item>
-        
+
         <a-form-item label="发布设置">
           <a-space direction="vertical" style="width: 100%">
-            <a-checkbox v-model:checked="createForm.isTop">
-              设为置顶
-            </a-checkbox>
-            <a-checkbox v-model:checked="createForm.isRecommend">
-              设为推荐
-            </a-checkbox>
-            <a-checkbox v-model:checked="createForm.allowComment">
-              允许评论
-            </a-checkbox>
-            <a-checkbox v-model:checked="createForm.enableSchedule">
-              定时发布
-            </a-checkbox>
+            <a-checkbox v-model:checked="createForm.isTop"> 设为置顶 </a-checkbox>
+            <a-checkbox v-model:checked="createForm.isRecommend"> 设为推荐 </a-checkbox>
+            <a-checkbox v-model:checked="createForm.allowComment"> 允许评论 </a-checkbox>
+            <a-checkbox v-model:checked="createForm.enableSchedule"> 定时发布 </a-checkbox>
           </a-space>
         </a-form-item>
-        
+
         <a-form-item v-if="createForm.enableSchedule" label="发布时间">
           <a-date-picker
             v-model:value="createForm.publishTime"
@@ -516,7 +490,9 @@
       title="内容详情"
       width="800px"
       :footer="null"
-     ok-text="确定" cancel-text="取消">
+      ok-text="确定"
+      cancel-text="取消"
+    >
       <div v-if="currentContent" class="content-detail">
         <a-descriptions :column="2" bordered>
           <a-descriptions-item label="标题" :span="2">
@@ -528,7 +504,10 @@
             </a-tag>
           </a-descriptions-item>
           <a-descriptions-item label="状态">
-            <a-badge :status="getStatusBadge(currentContent.status)" :text="getStatusText(currentContent.status)" />
+            <a-badge
+              :status="getStatusBadge(currentContent.status)"
+              :text="getStatusText(currentContent.status)"
+            />
           </a-descriptions-item>
           <a-descriptions-item label="作者">
             {{ currentContent.author }}
@@ -551,7 +530,7 @@
             </div>
           </a-descriptions-item>
         </a-descriptions>
-        
+
         <div class="detail-actions">
           <a-space>
             <a-button type="primary" @click="editContent(currentContent)">
@@ -562,7 +541,7 @@
               <CopyOutlined />
               复制
             </a-button>
-            <a-button 
+            <a-button
               @click="publishContent(currentContent)"
               v-if="currentContent.status === 'draft'"
             >
@@ -610,47 +589,26 @@ import {
 } from '@ant-design/icons-vue'
 import type { TableColumnsType, TableProps, FormInstance, UploadFile } from 'ant-design-vue'
 import { debounce } from 'lodash-es'
-import dayjs, { type Dayjs } from 'dayjs'
+import { type Dayjs } from 'dayjs'
+import type { ContentOverview, Content, ContentCategory } from '@/mock/content'
+import {
+  getContentOverview,
+  getContentList,
+  getContentCategories,
+  createContent,
+  updateContent,
+  deleteContent as apiDeleteContent,
+  publishContent as apiPublishContent,
+  archiveContent as apiArchiveContent,
+  duplicateContent as apiDuplicateContent,
+  setContentTop as apiSetContentTop,
+  setContentRecommend as apiSetContentRecommend,
+  exportContentList,
+} from '@/api/content'
 
 /**
  * 内容管理页面
  */
-
-interface ContentOverview {
-  totalContent: number
-  publishedContent: number
-  draftContent: number
-  mediaFiles: number
-}
-
-interface Content {
-  id: string
-  title: string
-  type: string
-  status: string
-  summary?: string
-  content?: string
-  thumbnail?: string
-  author: string
-  createTime: string
-  updateTime: string
-  publishTime?: string
-  views: number
-  isTop: boolean
-  isHot: boolean
-  isRecommend: boolean
-  allowComment: boolean
-  seoTitle?: string
-  seoKeywords?: string
-  seoDescription?: string
-}
-
-interface Category {
-  id: string
-  name: string
-  icon: any
-  count: number
-}
 
 interface SearchForm {
   title: string
@@ -696,7 +654,7 @@ const overview = ref<ContentOverview>({
 })
 
 // 分类数据
-const categories = ref<Category[]>([
+const categories = ref<ContentCategory[]>([
   { id: 'all', name: '全部', icon: FileTextOutlined, count: 0 },
   { id: 'article', name: '文章', icon: BookOutlined, count: 0 },
   { id: 'page', name: '页面', icon: BankOutlined, count: 0 },
@@ -885,26 +843,42 @@ const formatNumber = (num: number): string => {
  */
 const loadOverviewData = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    overview.value = {
-      totalContent: 245,
-      publishedContent: 189,
-      draftContent: 56,
-      mediaFiles: 1234,
+    const [overviewRes, categoriesRes] = await Promise.all([
+      getContentOverview(),
+      getContentCategories(),
+    ])
+
+    if (overviewRes.code === 200) {
+      overview.value = overviewRes.data
     }
-    
-    // 更新分类统计
-    categories.value = [
-      { id: 'all', name: '全部', icon: FileTextOutlined, count: 245 },
-      { id: 'article', name: '文章', icon: BookOutlined, count: 156 },
-      { id: 'page', name: '页面', icon: BankOutlined, count: 23 },
-      { id: 'banner', name: '轮播图', icon: PictureOutlined, count: 12 },
-      { id: 'notice', name: '公告', icon: BellOutlined, count: 34 },
-      { id: 'help', name: '帮助', icon: QuestionCircleOutlined, count: 20 },
-    ]
+
+    if (categoriesRes.code === 200) {
+      // 添加全部分类
+      const allCategory = {
+        id: 'all',
+        name: '全部',
+        icon: FileTextOutlined,
+        count: overviewRes.data?.totalContent || 0,
+      }
+
+      // 映射分类图标
+      const iconMap: Record<string, any> = {
+        article: BookOutlined,
+        page: BankOutlined,
+        banner: PictureOutlined,
+        notice: BellOutlined,
+        help: QuestionCircleOutlined,
+      }
+
+      const mappedCategories = categoriesRes.data.map((cat) => ({
+        ...cat,
+        icon: iconMap[cat.id] || FileTextOutlined,
+      }))
+
+      categories.value = [allCategory, ...mappedCategories]
+    }
   } catch (error) {
+    console.error('加载概览数据失败:', error)
     message.error('加载概览数据失败')
   }
 }
@@ -915,100 +889,26 @@ const loadOverviewData = async (): Promise<void> => {
 const loadContentList = async (): Promise<void> => {
   loading.value = true
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 800))
-    
-    contentList.value = [
-      {
-        id: 'C001',
-        title: '2024年春季新品发布会',
-        type: 'article',
-        status: 'published',
-        summary: '介绍我们最新的春季产品系列，包含多款时尚单品',
-        content: '详细的产品发布会内容...',
-        thumbnail: 'https://picsum.photos/300/200?random=1',
-        author: '张三',
-        createTime: '2024-01-01 10:00:00',
-        updateTime: '2024-01-15 14:30:00',
-        views: 15420,
-        isTop: true,
-        isHot: true,
-        isRecommend: true,
-        allowComment: true,
-        seoTitle: '2024春季新品发布',
-        seoKeywords: '新品,春季,发布会',
-        seoDescription: '2024年春季新品发布会详情',
-      },
-      {
-        id: 'C002',
-        title: '用户隐私政策更新',
-        type: 'notice',
-        status: 'published',
-        summary: '我们更新了用户隐私政策，请仔细阅读相关条款',
-        content: '隐私政策详细内容...',
-        author: '李四',
-        createTime: '2024-01-02 11:00:00',
-        updateTime: '2024-01-10 16:20:00',
-        views: 8930,
-        isTop: false,
-        isHot: false,
-        isRecommend: false,
-        allowComment: false,
-      },
-      {
-        id: 'C003',
-        title: '如何使用购物车功能',
-        type: 'help',
-        status: 'draft',
-        summary: '详细介绍购物车的使用方法和注意事项',
-        content: '购物车使用教程...',
-        thumbnail: 'https://picsum.photos/300/200?random=2',
-        author: '王五',
-        createTime: '2024-01-03 09:30:00',
-        updateTime: '2024-01-12 10:15:00',
-        views: 0,
-        isTop: false,
-        isHot: false,
-        isRecommend: false,
-        allowComment: true,
-      },
-      {
-        id: 'C004',
-        title: '首页轮播图1',
-        type: 'banner',
-        status: 'published',
-        summary: '首页主要轮播图片',
-        content: '',
-        thumbnail: 'https://picsum.photos/800/400?random=3',
-        author: '赵六',
-        createTime: '2024-01-04 15:00:00',
-        updateTime: '2024-01-14 11:45:00',
-        views: 25600,
-        isTop: false,
-        isHot: false,
-        isRecommend: false,
-        allowComment: false,
-      },
-      {
-        id: 'C005',
-        title: '关于我们',
-        type: 'page',
-        status: 'published',
-        summary: '公司介绍页面',
-        content: '公司详细介绍内容...',
-        author: '孙七',
-        createTime: '2024-01-05 13:20:00',
-        updateTime: '2024-01-08 17:30:00',
-        views: 3450,
-        isTop: false,
-        isHot: false,
-        isRecommend: false,
-        allowComment: false,
-      },
-    ]
-    
-    pagination.total = contentList.value.length
+    const params = {
+      page: pagination.current,
+      pageSize: pagination.pageSize,
+      title: searchForm.title || undefined,
+      type: searchForm.type || undefined,
+      status: searchForm.status || undefined,
+      startDate: searchForm.dateRange?.[0]?.format('YYYY-MM-DD') || undefined,
+      endDate: searchForm.dateRange?.[1]?.format('YYYY-MM-DD') || undefined,
+    }
+
+    const response = await getContentList(params)
+
+    if (response.code === 200) {
+      contentList.value = response.data.list
+      pagination.total = response.data.total
+    } else {
+      message.error(response.message || '加载内容列表失败')
+    }
   } catch (error) {
+    console.error('加载内容列表失败:', error)
     message.error('加载内容列表失败')
   } finally {
     loading.value = false
@@ -1084,16 +984,42 @@ const showCreateModal = (): void => {
 const handleCreateSubmit = async (): Promise<void> => {
   try {
     await createFormRef.value?.validate()
-    
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    message.success(editingContent.value ? '内容更新成功' : '内容创建成功')
-    createModalVisible.value = false
-    loadContentList()
-    loadOverviewData()
+
+    const formData = {
+      title: createForm.title,
+      type: createForm.type,
+      summary: createForm.summary,
+      content: createForm.content,
+      thumbnail: createForm.thumbnailList[0]?.url || '',
+      seoTitle: createForm.seoTitle,
+      seoKeywords: createForm.seoKeywords,
+      seoDescription: createForm.seoDescription,
+      isTop: createForm.isTop,
+      isRecommend: createForm.isRecommend,
+      allowComment: createForm.allowComment,
+      publishTime: createForm.enableSchedule
+        ? createForm.publishTime?.format('YYYY-MM-DD HH:mm:ss')
+        : undefined,
+    }
+
+    let response
+    if (editingContent.value) {
+      response = await updateContent(editingContent.value.id, formData)
+    } else {
+      response = await createContent(formData)
+    }
+
+    if (response.code === 200) {
+      message.success(editingContent.value ? '内容更新成功' : '内容创建成功')
+      createModalVisible.value = false
+      loadContentList()
+      loadOverviewData()
+    } else {
+      message.error(response.message || '操作失败')
+    }
   } catch (error) {
     console.error('表单验证失败:', error)
+    message.error('请检查表单填写')
   }
 }
 
@@ -1146,12 +1072,16 @@ const editContent = (content: Content): void => {
     type: content.type,
     summary: content.summary || '',
     content: content.content || '',
-    thumbnailList: content.thumbnail ? [{
-      uid: '-1',
-      name: 'thumbnail.jpg',
-      status: 'done',
-      url: content.thumbnail,
-    }] : [],
+    thumbnailList: content.thumbnail
+      ? [
+          {
+            uid: '-1',
+            name: 'thumbnail.jpg',
+            status: 'done',
+            url: content.thumbnail,
+          },
+        ]
+      : [],
     seoTitle: content.seoTitle || '',
     seoKeywords: content.seoKeywords || '',
     seoDescription: content.seoDescription || '',
@@ -1169,13 +1099,17 @@ const editContent = (content: Content): void => {
  */
 const publishContent = async (content: Content): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    message.success('内容发布成功')
-    loadContentList()
-    loadOverviewData()
+    const response = await apiPublishContent(content.id)
+
+    if (response.code === 200) {
+      message.success('内容发布成功')
+      loadContentList()
+      loadOverviewData()
+    } else {
+      message.error(response.message || '内容发布失败')
+    }
   } catch (error) {
+    console.error('发布内容失败:', error)
     message.error('内容发布失败')
   }
 }
@@ -1185,13 +1119,17 @@ const publishContent = async (content: Content): Promise<void> => {
  */
 const duplicateContent = async (content: Content): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    message.success('内容复制成功')
-    loadContentList()
-    loadOverviewData()
+    const response = await apiDuplicateContent(content.id)
+
+    if (response.code === 200) {
+      message.success('内容复制成功')
+      loadContentList()
+      loadOverviewData()
+    } else {
+      message.error(response.message || '内容复制失败')
+    }
   } catch (error) {
+    console.error('复制内容失败:', error)
     message.error('内容复制失败')
   }
 }
@@ -1201,12 +1139,16 @@ const duplicateContent = async (content: Content): Promise<void> => {
  */
 const setContentTop = async (content: Content): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    message.success(content.isTop ? '取消置顶成功' : '设置置顶成功')
-    loadContentList()
+    const response = await apiSetContentTop(content.id, !content.isTop)
+
+    if (response.code === 200) {
+      message.success(content.isTop ? '取消置顶成功' : '设置置顶成功')
+      loadContentList()
+    } else {
+      message.error(response.message || '操作失败')
+    }
   } catch (error) {
+    console.error('设置置顶失败:', error)
     message.error('操作失败')
   }
 }
@@ -1216,12 +1158,16 @@ const setContentTop = async (content: Content): Promise<void> => {
  */
 const setContentRecommend = async (content: Content): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    message.success(content.isRecommend ? '取消推荐成功' : '设置推荐成功')
-    loadContentList()
+    const response = await apiSetContentRecommend(content.id, !content.isRecommend)
+
+    if (response.code === 200) {
+      message.success(content.isRecommend ? '取消推荐成功' : '设置推荐成功')
+      loadContentList()
+    } else {
+      message.error(response.message || '操作失败')
+    }
   } catch (error) {
+    console.error('设置推荐失败:', error)
     message.error('操作失败')
   }
 }
@@ -1231,13 +1177,17 @@ const setContentRecommend = async (content: Content): Promise<void> => {
  */
 const archiveContent = async (content: Content): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    message.success('内容归档成功')
-    loadContentList()
-    loadOverviewData()
+    const response = await apiArchiveContent(content.id)
+
+    if (response.code === 200) {
+      message.success('内容归档成功')
+      loadContentList()
+      loadOverviewData()
+    } else {
+      message.error(response.message || '内容归档失败')
+    }
   } catch (error) {
+    console.error('归档内容失败:', error)
     message.error('内容归档失败')
   }
 }
@@ -1247,13 +1197,17 @@ const archiveContent = async (content: Content): Promise<void> => {
  */
 const deleteContent = async (content: Content): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    message.success('内容删除成功')
-    loadContentList()
-    loadOverviewData()
+    const response = await apiDeleteContent(content.id)
+
+    if (response.code === 200) {
+      message.success('内容删除成功')
+      loadContentList()
+      loadOverviewData()
+    } else {
+      message.error(response.message || '内容删除失败')
+    }
   } catch (error) {
+    console.error('删除内容失败:', error)
     message.error('内容删除失败')
   }
 }
@@ -1266,16 +1220,25 @@ const batchPublish = async (): Promise<void> => {
     message.warning('请选择要发布的内容')
     return
   }
-  
+
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    message.success(`成功发布 ${rowSelection.selectedRowKeys.value.length} 条内容`)
+    const promises = rowSelection.selectedRowKeys.value.map((id) => apiPublishContent(id))
+    const responses = await Promise.all(promises)
+
+    const successCount = responses.filter((res) => res.code === 200).length
+    const failCount = responses.length - successCount
+
+    if (failCount === 0) {
+      message.success(`成功发布 ${successCount} 条内容`)
+    } else {
+      message.warning(`成功发布 ${successCount} 条内容，失败 ${failCount} 条`)
+    }
+
     rowSelection.selectedRowKeys.value = []
     loadContentList()
     loadOverviewData()
   } catch (error) {
+    console.error('批量发布失败:', error)
     message.error('批量发布失败')
   }
 }
@@ -1283,16 +1246,53 @@ const batchPublish = async (): Promise<void> => {
 /**
  * 导出内容
  */
-const exportContent = (): void => {
-  message.success('内容导出成功')
+const exportContent = async (): Promise<void> => {
+  try {
+    const params = {
+      title: searchForm.title || undefined,
+      type: searchForm.type || undefined,
+      status: searchForm.status || undefined,
+      startDate: searchForm.dateRange?.[0]?.format('YYYY-MM-DD') || undefined,
+      endDate: searchForm.dateRange?.[1]?.format('YYYY-MM-DD') || undefined,
+    }
+
+    const response = await exportContentList(params)
+
+    if (response.code === 200) {
+      // 创建下载链接
+      const blob = new Blob([JSON.stringify(response.data)], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `内容列表_${new Date().toISOString().slice(0, 10)}.xlsx`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      message.success('导出成功')
+    } else {
+      message.error(response.message || '导出失败')
+    }
+  } catch (error) {
+    console.error('导出内容失败:', error)
+    message.error('导出失败')
+  }
 }
 
 /**
  * 刷新内容
  */
-const refreshContent = (): void => {
-  loadContentList()
-  loadOverviewData()
+const refreshContent = async (): Promise<void> => {
+  try {
+    await Promise.all([loadOverviewData(), loadContentList()])
+    message.success('刷新成功')
+  } catch (error) {
+    console.error('刷新数据失败:', error)
+    message.error('刷新失败')
+  }
 }
 
 /**
@@ -1327,7 +1327,7 @@ onMounted(() => {
     font-weight: 600;
     color: #262626;
   }
-  
+
   .page-description {
     margin: 0;
     color: #8c8c8c;
@@ -1337,20 +1337,20 @@ onMounted(() => {
 
 .overview-section {
   margin-bottom: 24px;
-  
+
   .stat-card {
     text-align: center;
-    
+
     :deep(.ant-statistic-title) {
       font-size: 14px;
       color: #8c8c8c;
     }
-    
+
     :deep(.ant-statistic-content) {
       display: flex;
       align-items: center;
       justify-content: center;
-      
+
       .ant-statistic-content-value {
         font-size: 24px;
         font-weight: 600;
@@ -1361,12 +1361,12 @@ onMounted(() => {
 
 .category-section {
   margin-bottom: 24px;
-  
+
   .category-tag-active {
     background-color: #1890ff !important;
     color: #fff !important;
   }
-  
+
   .category-count {
     margin-left: 4px;
     font-size: 12px;
@@ -1380,13 +1380,13 @@ onMounted(() => {
 
 .table-section {
   margin-bottom: 24px;
-  
+
   .content-title {
     .content-meta {
       margin-top: 4px;
     }
   }
-  
+
   .thumbnail-wrapper {
     .no-thumbnail {
       width: 60px;
@@ -1406,7 +1406,7 @@ onMounted(() => {
     .card-cover {
       position: relative;
       overflow: hidden;
-      
+
       .no-cover {
         height: 160px;
         display: flex;
@@ -1414,7 +1414,7 @@ onMounted(() => {
         justify-content: center;
         background: #f5f5f5;
       }
-      
+
       .card-overlay {
         position: absolute;
         top: 0;
@@ -1428,17 +1428,17 @@ onMounted(() => {
         opacity: 0;
         transition: opacity 0.3s;
       }
-      
+
       &:hover .card-overlay {
         opacity: 1;
       }
     }
-    
+
     .card-title {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      
+
       .title-text {
         flex: 1;
         overflow: hidden;
@@ -1447,7 +1447,7 @@ onMounted(() => {
         margin-right: 8px;
       }
     }
-    
+
     .card-content {
       .content-summary {
         color: #8c8c8c;
@@ -1459,21 +1459,21 @@ onMounted(() => {
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
-      
+
       .content-tags {
         margin-bottom: 12px;
         min-height: 22px;
       }
-      
+
       .content-meta {
         margin-bottom: 16px;
-        
+
         .meta-item {
           display: flex;
           align-items: center;
           margin-bottom: 4px;
           font-size: 12px;
-          
+
           .meta-label {
             color: #8c8c8c;
             margin-right: 8px;
@@ -1481,18 +1481,18 @@ onMounted(() => {
           }
         }
       }
-      
+
       .card-actions {
         display: flex;
         gap: 8px;
-        
+
         .ant-btn {
           flex: 1;
         }
       }
     }
   }
-  
+
   .card-pagination {
     margin-top: 24px;
     text-align: center;
@@ -1509,7 +1509,7 @@ onMounted(() => {
     font-size: 12px;
     line-height: 1.5;
   }
-  
+
   .detail-actions {
     margin-top: 24px;
     text-align: center;
@@ -1521,24 +1521,24 @@ onMounted(() => {
   .content-view {
     padding: 16px;
   }
-  
+
   .page-header {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .overview-section {
     .ant-col {
       margin-bottom: 16px;
     }
   }
-  
+
   .search-section {
     :deep(.ant-form-item) {
       margin-bottom: 16px;
     }
   }
-  
+
   .card-view {
     .ant-col {
       span: 12;

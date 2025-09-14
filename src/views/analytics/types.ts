@@ -31,6 +31,12 @@ export interface OrderDataItem {
   id: string
   orderNo: string
   userName: string
+  productName?: string
+  productSku?: string
+  category?: string
+  quantity?: number
+  channel?: string
+  region?: string
   amount: number
   createTime: string
   paymentMethod: string

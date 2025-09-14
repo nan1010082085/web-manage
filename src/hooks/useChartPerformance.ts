@@ -175,7 +175,7 @@ export function useChartPerformance(config: CacheConfig = {}) {
    * @param config 防抖配置
    * @returns 防抖后的函数
    */
-  const createDebounced = <T extends (...args: any[]) => any>(
+  const createDebounced = <T extends (...args: unknown[]) => unknown>(
     fn: T,
     config: DebounceConfig = {}
   ): T => {
@@ -209,7 +209,7 @@ export function useChartPerformance(config: CacheConfig = {}) {
    * @param delay 节流延迟
    * @returns 节流后的函数
    */
-  const createThrottled = <T extends (...args: any[]) => any>(
+  const createThrottled = <T extends (...args: unknown[]) => unknown>(
     fn: T,
     delay: number = 300
   ): T => {

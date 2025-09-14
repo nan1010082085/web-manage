@@ -1,6 +1,5 @@
 import { generateMockData } from '@/utils/mockDataGenerator'
 import { apiGet, type ApiResponse } from './index'
-import type { ApiResponse as ChartApiResponse } from '@/types/charts'
 
 // 模拟延迟函数
 const simulateDelay = (ms: number = 300): Promise<void> => {

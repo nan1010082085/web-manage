@@ -124,7 +124,7 @@
               </template>
             </a-input>
           </a-form-item>
-          
+
           <a-form-item label="客户信息">
             <a-input
               v-model:value="searchForm.customer"
@@ -133,7 +133,7 @@
               style="width: 180px"
             />
           </a-form-item>
-          
+
           <a-form-item label="工单状态">
             <a-select
               v-model:value="searchForm.status"
@@ -147,7 +147,7 @@
               <a-select-option value="closed">已关闭</a-select-option>
             </a-select>
           </a-form-item>
-          
+
           <a-form-item label="问题类型">
             <a-select
               v-model:value="searchForm.category"
@@ -162,7 +162,7 @@
               <a-select-option value="other">其他问题</a-select-option>
             </a-select>
           </a-form-item>
-          
+
           <a-form-item label="优先级">
             <a-select
               v-model:value="searchForm.priority"
@@ -176,23 +176,18 @@
               <a-select-option value="urgent">紧急</a-select-option>
             </a-select>
           </a-form-item>
-          
+
           <a-form-item label="创建时间">
-            <a-range-picker
-              v-model:value="searchForm.dateRange"
-              style="width: 240px"
-            />
+            <a-range-picker v-model:value="searchForm.dateRange" style="width: 240px" />
           </a-form-item>
-          
+
           <a-form-item>
             <a-space>
               <a-button type="primary" html-type="submit">
                 <SearchOutlined />
                 搜索
               </a-button>
-              <a-button @click="resetSearch">
-                重置
-              </a-button>
+              <a-button @click="resetSearch"> 重置 </a-button>
             </a-space>
           </a-form-item>
         </a-form>
@@ -212,18 +207,14 @@
               <CloseOutlined />
               批量关闭
             </a-button>
-            <a-select
-              v-model:value="pageSize"
-              @change="handlePageSizeChange"
-              style="width: 100px"
-            >
+            <a-select v-model:value="pageSize" @change="handlePageSizeChange" style="width: 100px">
               <a-select-option :value="10">10条/页</a-select-option>
               <a-select-option :value="20">20条/页</a-select-option>
               <a-select-option :value="50">50条/页</a-select-option>
             </a-select>
           </a-space>
         </template>
-        
+
         <a-table
           :columns="tableColumns"
           :data-source="ticketData"
@@ -239,32 +230,32 @@
                 {{ record.ticketId }}
               </a-button>
             </template>
-            
+
             <template v-else-if="column.key === 'customer'">
               <div class="customer-info">
                 <div class="name">{{ record.customerName }}</div>
                 <div class="contact">{{ record.customerPhone }}</div>
               </div>
             </template>
-            
+
             <template v-else-if="column.key === 'category'">
               <a-tag :color="getCategoryColor(record.category)">
                 {{ getCategoryText(record.category) }}
               </a-tag>
             </template>
-            
+
             <template v-else-if="column.key === 'priority'">
               <a-tag :color="getPriorityColor(record.priority)">
                 {{ getPriorityText(record.priority) }}
               </a-tag>
             </template>
-            
+
             <template v-else-if="column.key === 'status'">
               <a-tag :color="getStatusColor(record.status)">
                 {{ getStatusText(record.status) }}
               </a-tag>
             </template>
-            
+
             <template v-else-if="column.key === 'assignee'">
               <div class="assignee-info" v-if="record.assignee">
                 <a-avatar size="small" :src="record.assignee.avatar">
@@ -274,15 +265,11 @@
               </div>
               <span v-else class="unassigned">未分配</span>
             </template>
-            
+
             <template v-else-if="column.key === 'actions'">
               <a-space>
-                <a-button type="link" size="small" @click="viewDetail(record)">
-                  详情
-                </a-button>
-                <a-button type="link" size="small" @click="replyTicket(record)">
-                  回复
-                </a-button>
+                <a-button type="link" size="small" @click="viewDetail(record)"> 详情 </a-button>
+                <a-button type="link" size="small" @click="replyTicket(record)"> 回复 </a-button>
                 <a-dropdown>
                   <template #overlay>
                     <a-menu @click="({ key }: { key: string }) => handleMenuClick(key, record)">
@@ -328,13 +315,10 @@
       width="800px"
       @ok="handleSubmit"
       @cancel="handleCancel"
-     ok-text="确定" cancel-text="取消">
-      <a-form
-        ref="formRef"
-        :model="formData"
-        :rules="formRules"
-        layout="vertical"
-      >
+      ok-text="确定"
+      cancel-text="取消"
+    >
+      <a-form ref="formRef" :model="formData" :rules="formRules" layout="vertical">
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="客户姓名" name="customerName">
@@ -347,7 +331,7 @@
             </a-form-item>
           </a-col>
         </a-row>
-        
+
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="问题类型" name="category">
@@ -371,23 +355,19 @@
             </a-form-item>
           </a-col>
         </a-row>
-        
+
         <a-form-item label="问题标题" name="title">
           <a-input v-model:value="formData.title" placeholder="请输入问题标题" />
         </a-form-item>
-        
+
         <a-form-item label="问题描述" name="description">
-          <a-textarea
-            v-model:value="formData.description"
-            placeholder="请详细描述问题"
-            :rows="4"
-          />
+          <a-textarea v-model:value="formData.description" placeholder="请详细描述问题" :rows="4" />
         </a-form-item>
-        
+
         <a-form-item label="相关订单" name="orderId">
           <a-input v-model:value="formData.orderId" placeholder="相关订单号（可选）" />
         </a-form-item>
-        
+
         <a-form-item label="分配给" name="assigneeId">
           <a-select v-model:value="formData.assigneeId" placeholder="选择客服人员" allow-clear>
             <a-select-option value="cs001">张小明</a-select-option>
@@ -396,13 +376,9 @@
             <a-select-option value="cs004">赵小美</a-select-option>
           </a-select>
         </a-form-item>
-        
+
         <a-form-item label="附件">
-          <a-upload
-            v-model:file-list="formData.attachments"
-            :before-upload="() => false"
-            multiple
-          >
+          <a-upload v-model:file-list="formData.attachments" :before-upload="() => false" multiple>
             <a-button>
               <UploadOutlined />
               上传附件
@@ -418,14 +394,22 @@
       title="工单详情"
       :footer="null"
       width="1000px"
-     ok-text="确定" cancel-text="取消">
+      ok-text="确定"
+      cancel-text="取消"
+    >
       <div class="ticket-detail" v-if="selectedTicket">
         <!-- 工单基本信息 -->
         <a-card title="基本信息" size="small" class="detail-card">
           <a-descriptions :column="3" bordered>
-            <a-descriptions-item label="工单编号">{{ selectedTicket.ticketId }}</a-descriptions-item>
-            <a-descriptions-item label="客户姓名">{{ selectedTicket.customerName }}</a-descriptions-item>
-            <a-descriptions-item label="联系电话">{{ selectedTicket.customerPhone }}</a-descriptions-item>
+            <a-descriptions-item label="工单编号">{{
+              selectedTicket.ticketId
+            }}</a-descriptions-item>
+            <a-descriptions-item label="客户姓名">{{
+              selectedTicket.customerName
+            }}</a-descriptions-item>
+            <a-descriptions-item label="联系电话">{{
+              selectedTicket.customerPhone
+            }}</a-descriptions-item>
             <a-descriptions-item label="问题类型">
               <a-tag :color="getCategoryColor(selectedTicket.category)">
                 {{ getCategoryText(selectedTicket.category) }}
@@ -441,8 +425,12 @@
                 {{ getStatusText(selectedTicket.status) }}
               </a-tag>
             </a-descriptions-item>
-            <a-descriptions-item label="创建时间">{{ selectedTicket.createTime }}</a-descriptions-item>
-            <a-descriptions-item label="更新时间">{{ selectedTicket.updateTime }}</a-descriptions-item>
+            <a-descriptions-item label="创建时间">{{
+              selectedTicket.createTime
+            }}</a-descriptions-item>
+            <a-descriptions-item label="更新时间">{{
+              selectedTicket.updateTime
+            }}</a-descriptions-item>
             <a-descriptions-item label="处理人">
               <span v-if="selectedTicket.assignee">{{ selectedTicket.assignee.name }}</span>
               <span v-else class="unassigned">未分配</span>
@@ -455,7 +443,7 @@
             </a-descriptions-item>
           </a-descriptions>
         </a-card>
-        
+
         <!-- 处理记录 -->
         <a-card title="处理记录" size="small" class="detail-card">
           <a-timeline>
@@ -480,7 +468,7 @@
             </a-timeline-item>
           </a-timeline>
         </a-card>
-        
+
         <!-- 快捷操作 -->
         <div class="detail-actions">
           <a-space>
@@ -488,7 +476,7 @@
               <MessageOutlined />
               回复
             </a-button>
-            <a-button @click="assignTicket(selectedTicket)">
+            <a-button @click="assignTicketHandler(selectedTicket)">
               <UserOutlined />
               分配
             </a-button>
@@ -496,11 +484,17 @@
               <ArrowUpOutlined />
               升级
             </a-button>
-            <a-button @click="resolveTicket(selectedTicket)" v-if="selectedTicket.status !== 'resolved'">
+            <a-button
+              @click="resolveTicketHandler(selectedTicket)"
+              v-if="selectedTicket.status !== 'resolved'"
+            >
               <CheckOutlined />
               解决
             </a-button>
-            <a-button @click="closeTicket(selectedTicket)" v-if="selectedTicket.status !== 'closed'">
+            <a-button
+              @click="closeTicketHandler(selectedTicket)"
+              v-if="selectedTicket.status !== 'closed'"
+            >
               <CloseOutlined />
               关闭
             </a-button>
@@ -515,40 +509,32 @@
       title="回复工单"
       @ok="handleReply"
       @cancel="replyModalVisible = false"
-     ok-text="确定" cancel-text="取消">
+      ok-text="确定"
+      cancel-text="取消"
+    >
       <a-form layout="vertical">
         <a-form-item label="回复内容">
-          <a-textarea
-            v-model:value="replyForm.content"
-            placeholder="请输入回复内容"
-            :rows="6"
-          />
+          <a-textarea v-model:value="replyForm.content" placeholder="请输入回复内容" :rows="6" />
         </a-form-item>
-        
+
         <a-form-item label="回复类型">
           <a-radio-group v-model:value="replyForm.type">
             <a-radio value="public">公开回复</a-radio>
             <a-radio value="internal">内部备注</a-radio>
           </a-radio-group>
         </a-form-item>
-        
+
         <a-form-item label="附件">
-          <a-upload
-            v-model:file-list="replyForm.attachments"
-            :before-upload="() => false"
-            multiple
-          >
+          <a-upload v-model:file-list="replyForm.attachments" :before-upload="() => false" multiple>
             <a-button>
               <UploadOutlined />
               上传附件
             </a-button>
           </a-upload>
         </a-form-item>
-        
+
         <a-form-item>
-          <a-checkbox v-model:checked="replyForm.notifyCustomer">
-            通知客户
-          </a-checkbox>
+          <a-checkbox v-model:checked="replyForm.notifyCustomer"> 通知客户 </a-checkbox>
         </a-form-item>
       </a-form>
     </a-modal>
@@ -584,77 +570,35 @@ import {
 import type { TableColumnsType, TableProps, UploadFile } from 'ant-design-vue'
 import { debounce } from 'lodash-es'
 import dayjs, { type Dayjs } from 'dayjs'
-
-/**
- * 客服管理页面
- */
-
-interface ServiceOverview {
-  totalTickets: number
-  pendingTickets: number
-  resolvedTickets: number
-  resolutionRate: number
-}
-
-interface Assignee {
-  id: string
-  name: string
-  avatar?: string
-}
-
-interface TicketRecord {
-  id: string
-  type: string
-  action: string
-  operator: string
-  time: string
-  content?: string
-}
-
-interface Ticket {
-  id: string
-  ticketId: string
-  customerName: string
-  customerPhone: string
-  title: string
-  description: string
-  category: string
-  priority: string
-  status: string
-  orderId?: string
-  assignee?: Assignee
-  createTime: string
-  updateTime: string
-  records: TicketRecord[]
-}
-
-interface SearchForm {
-  ticketId: string
-  customer: string
-  status?: string
-  category?: string
-  priority?: string
-  dateRange?: [Dayjs, Dayjs]
-}
-
-interface FormData {
-  customerName: string
-  customerPhone: string
-  title: string
-  description: string
-  category: string
-  priority: string
-  orderId?: string
-  assigneeId?: string
-  attachments?: UploadFile[]
-}
-
-interface ReplyForm {
-  content: string
-  type: string
-  attachments?: UploadFile[]
-  notifyCustomer: boolean
-}
+import {
+  getServiceOverview,
+  getTicketList,
+  getTicketDetail,
+  createTicket,
+  updateTicket,
+  deleteTicket,
+  getAgentList,
+  assignTicket,
+  closeTicket,
+  resolveTicket,
+  exportTickets as exportTicketsApi,
+} from '@/api/service'
+import type {
+  ServiceOverview,
+  Ticket,
+  ServiceAgent,
+  TicketRecord,
+  TicketListParams,
+  CreateTicketParams,
+  UpdateTicketParams,
+  SearchForm,
+  FormData,
+  ReplyForm,
+  AssignTicketParams,
+  ResolveTicketParams,
+  CloseTicketParams,
+  AddReplyParams,
+} from '@/api/service'
 
 // 响应式数据
 const tableLoading = ref(false)
@@ -905,201 +849,78 @@ const getRecordIcon = (type: string) => {
 }
 
 /**
+ * 加载客服概览数据
+ */
+const loadOverviewData = async (): Promise<void> => {
+  try {
+    const response = await getServiceOverview()
+    if (response.code === 200) {
+      overview.value = response.data
+    } else {
+      message.error(response.message || '获取概览数据失败')
+    }
+  } catch (error) {
+    console.error('获取概览数据失败:', error)
+    message.error('获取概览数据失败')
+  }
+}
+
+/**
+ * 客服人员列表
+ */
+const agentList = ref<ServiceAgent[]>([])
+
+/**
+ * 加载客服人员列表
+ */
+const loadAgentList = async (): Promise<void> => {
+  try {
+    const response = await getAgentList()
+    if (response.code === 200) {
+      agentList.value = response.data
+    } else {
+      message.error(response.message || '获取客服人员列表失败')
+    }
+  } catch (error) {
+    console.error('获取客服人员列表失败:', error)
+    message.error('获取客服人员列表失败')
+  }
+}
+
+/**
  * 加载工单数据
  */
 const loadTicketData = async (): Promise<void> => {
   tableLoading.value = true
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 800))
-    
-    // 模拟概览数据
-    overview.value = {
-      totalTickets: 1248,
-      pendingTickets: 156,
-      resolvedTickets: 1092,
-      resolutionRate: 87.5,
+    const params: TicketListParams = {
+      page: pagination.current,
+      pageSize: pagination.pageSize,
+      keyword: searchForm.ticketId || searchForm.customer || undefined,
+      category: searchForm.category,
+      priority: searchForm.priority,
+      status: searchForm.status,
+      startTime: searchForm.dateRange?.[0]
+        ? dayjs(searchForm.dateRange[0]).format('YYYY-MM-DD')
+        : undefined,
+      endTime: searchForm.dateRange?.[1]
+        ? dayjs(searchForm.dateRange[1]).format('YYYY-MM-DD')
+        : undefined,
     }
-    
-    // 模拟工单数据
-    const mockData: Ticket[] = [
-      {
-        id: 'T001',
-        ticketId: 'CS202401001',
-        customerName: '张三',
-        customerPhone: '13800138001',
-        title: '订单支付失败',
-        description: '订单号ORD123456支付时提示网络错误，已尝试多次仍无法完成支付',
-        category: 'payment',
-        priority: 'high',
-        status: 'processing',
-        orderId: 'ORD123456',
-        assignee: {
-          id: 'cs001',
-          name: '张小明',
-          avatar: '',
-        },
-        createTime: '2024-01-15 10:30:00',
-        updateTime: '2024-01-15 14:20:00',
-        records: [
-          {
-            id: 'R001',
-            type: 'create',
-            action: '创建工单',
-            operator: '系统',
-            time: '2024-01-15 10:30:00',
-            content: '客户通过在线客服创建工单',
-          },
-          {
-            id: 'R002',
-            type: 'assign',
-            action: '分配工单',
-            operator: '客服主管',
-            time: '2024-01-15 11:00:00',
-            content: '工单已分配给张小明处理',
-          },
-          {
-            id: 'R003',
-            type: 'reply',
-            action: '客服回复',
-            operator: '张小明',
-            time: '2024-01-15 14:20:00',
-            content: '您好，我们已经联系技术部门检查支付系统，请稍后重试',
-          },
-        ],
-      },
-      {
-        id: 'T002',
-        ticketId: 'CS202401002',
-        customerName: '李四',
-        customerPhone: '13800138002',
-        title: '商品质量问题',
-        description: '购买的手机屏幕有划痕，要求退换货',
-        category: 'product',
-        priority: 'medium',
-        status: 'pending',
-        orderId: 'ORD123457',
-        createTime: '2024-01-15 15:45:00',
-        updateTime: '2024-01-15 15:45:00',
-        records: [
-          {
-            id: 'R004',
-            type: 'create',
-            action: '创建工单',
-            operator: '系统',
-            time: '2024-01-15 15:45:00',
-            content: '客户通过电话创建工单',
-          },
-        ],
-      },
-      {
-        id: 'T003',
-        ticketId: 'CS202401003',
-        customerName: '王五',
-        customerPhone: '13800138003',
-        title: '申请退款',
-        description: '商品不符合预期，申请全额退款',
-        category: 'refund',
-        priority: 'low',
-        status: 'resolved',
-        orderId: 'ORD123458',
-        assignee: {
-          id: 'cs002',
-          name: '李小红',
-          avatar: '',
-        },
-        createTime: '2024-01-14 09:20:00',
-        updateTime: '2024-01-15 16:30:00',
-        records: [
-          {
-            id: 'R005',
-            type: 'create',
-            action: '创建工单',
-            operator: '系统',
-            time: '2024-01-14 09:20:00',
-          },
-          {
-            id: 'R006',
-            type: 'assign',
-            action: '分配工单',
-            operator: '客服主管',
-            time: '2024-01-14 10:00:00',
-          },
-          {
-            id: 'R007',
-            type: 'resolve',
-            action: '解决工单',
-            operator: '李小红',
-            time: '2024-01-15 16:30:00',
-            content: '已为客户办理退款，预计3-5个工作日到账',
-          },
-        ],
-      },
-      {
-        id: 'T004',
-        ticketId: 'CS202401004',
-        customerName: '赵六',
-        customerPhone: '13800138004',
-        title: '订单配送延迟',
-        description: '订单已发货3天，物流信息无更新',
-        category: 'order',
-        priority: 'medium',
-        status: 'closed',
-        orderId: 'ORD123459',
-        assignee: {
-          id: 'cs003',
-          name: '王小强',
-          avatar: '',
-        },
-        createTime: '2024-01-13 14:15:00',
-        updateTime: '2024-01-15 10:00:00',
-        records: [
-          {
-            id: 'R008',
-            type: 'create',
-            action: '创建工单',
-            operator: '系统',
-            time: '2024-01-13 14:15:00',
-          },
-          {
-            id: 'R009',
-            type: 'close',
-            action: '关闭工单',
-            operator: '王小强',
-            time: '2024-01-15 10:00:00',
-            content: '已联系物流公司，商品已正常配送',
-          },
-        ],
-      },
-      {
-        id: 'T005',
-        ticketId: 'CS202401005',
-        customerName: '孙七',
-        customerPhone: '13800138005',
-        title: '账户登录问题',
-        description: '忘记密码，无法登录账户',
-        category: 'other',
-        priority: 'urgent',
-        status: 'pending',
-        createTime: '2024-01-15 16:50:00',
-        updateTime: '2024-01-15 16:50:00',
-        records: [
-          {
-            id: 'R010',
-            type: 'create',
-            action: '创建工单',
-            operator: '系统',
-            time: '2024-01-15 16:50:00',
-            content: '客户通过邮件创建工单',
-          },
-        ],
-      },
-    ]
-    
-    ticketData.value = mockData
-    pagination.total = mockData.length
+
+    const response = await getTicketList(params)
+    console.log('获取工单列表参数:', params)
+    console.log('获取工单列表响应:', response)
+
+    if (response.code === 200) {
+      ticketData.value = response.data.list
+      pagination.total = response.data.total
+    } else {
+      message.error(response.message || '获取工单列表失败')
+    }
   } catch (error) {
-    message.error('加载工单数据失败')
+    console.error('获取工单列表失败:', error)
+    message.error('获取工单列表失败')
   } finally {
     tableLoading.value = false
   }
@@ -1125,7 +946,8 @@ const resetSearch = (): void => {
     priority: undefined,
     dateRange: undefined,
   })
-  handleSearch()
+  pagination.current = 1
+  loadTicketData()
 }
 
 /**
@@ -1166,9 +988,19 @@ const showCreateModal = (): void => {
 /**
  * 查看详情
  */
-const viewDetail = (record: Ticket): void => {
-  selectedTicket.value = record
-  detailModalVisible.value = true
+const viewDetail = async (record: Ticket): Promise<void> => {
+  try {
+    const response = await getTicketDetail(record.id)
+    if (response.code === 200) {
+      selectedTicket.value = response.data
+      detailModalVisible.value = true
+    } else {
+      message.error(response.message || '获取工单详情失败')
+    }
+  } catch (error) {
+    console.error('获取工单详情失败:', error)
+    message.error('获取工单详情失败')
+  }
 }
 
 /**
@@ -1191,16 +1023,16 @@ const replyTicket = (record: Ticket): void => {
 const handleMenuClick = (key: string, record: Ticket): void => {
   switch (key) {
     case 'assign':
-      assignTicket(record)
+      assignTicketHandler(record)
       break
     case 'escalate':
       escalateTicket(record)
       break
     case 'resolve':
-      resolveTicket(record)
+      resolveTicketHandler(record)
       break
     case 'close':
-      closeTicket(record)
+      closeTicketHandler(record)
       break
     case 'export':
       exportTicket(record)
@@ -1211,9 +1043,19 @@ const handleMenuClick = (key: string, record: Ticket): void => {
 /**
  * 分配工单
  */
-const assignTicket = (record: Ticket): void => {
-  message.success(`工单 ${record.ticketId} 已分配`)
-  loadTicketData()
+const assignTicketHandler = async (record: Ticket): Promise<void> => {
+  try {
+    const response = await assignTicket({ id: record.id, agentId: 'cs001' })
+    if (response.code === 200) {
+      message.success(`工单 ${record.ticketId} 已分配`)
+      loadTicketData()
+    } else {
+      message.error(response.message || '分配工单失败')
+    }
+  } catch (error) {
+    console.error('分配工单失败:', error)
+    message.error('分配工单失败')
+  }
 }
 
 /**
@@ -1227,17 +1069,37 @@ const escalateTicket = (record: Ticket): void => {
 /**
  * 解决工单
  */
-const resolveTicket = (record: Ticket): void => {
-  message.success(`工单 ${record.ticketId} 已解决`)
-  loadTicketData()
+const resolveTicketHandler = async (record: Ticket): Promise<void> => {
+  try {
+    const response = await resolveTicket({ id: record.id })
+    if (response.code === 200) {
+      message.success(`工单 ${record.ticketId} 已解决`)
+      loadTicketData()
+    } else {
+      message.error(response.message || '解决工单失败')
+    }
+  } catch (error) {
+    console.error('解决工单失败:', error)
+    message.error('解决工单失败')
+  }
 }
 
 /**
  * 关闭工单
  */
-const closeTicket = (record: Ticket): void => {
-  message.success(`工单 ${record.ticketId} 已关闭`)
-  loadTicketData()
+const closeTicketHandler = async (record: Ticket): Promise<void> => {
+  try {
+    const response = await closeTicket({ id: record.id })
+    if (response.code === 200) {
+      message.success(`工单 ${record.ticketId} 已关闭`)
+      loadTicketData()
+    } else {
+      message.error(response.message || '关闭工单失败')
+    }
+  } catch (error) {
+    console.error('关闭工单失败:', error)
+    message.error('关闭工单失败')
+  }
 }
 
 /**
@@ -1280,17 +1142,38 @@ const handleReply = (): void => {
 const handleSubmit = async (): Promise<void> => {
   try {
     await formRef.value.validate()
-    
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    const action = editingTicket.value ? '更新' : '创建'
-    message.success(`${action}工单成功`)
-    
-    modalVisible.value = false
-    loadTicketData()
+
+    if (editingTicket.value) {
+      // 更新工单
+      const params: UpdateTicketParams = {
+        id: editingTicket.value.id,
+        ...formData,
+      }
+      const response = await updateTicket(params)
+      if (response.code === 200) {
+        message.success('更新工单成功')
+        modalVisible.value = false
+        loadTicketData()
+      } else {
+        message.error(response.message || '更新工单失败')
+      }
+    } else {
+      // 创建工单
+      const params: CreateTicketParams = {
+        ...formData,
+      }
+      const response = await createTicket(params)
+      if (response.code === 200) {
+        message.success('创建工单成功')
+        modalVisible.value = false
+        loadTicketData()
+      } else {
+        message.error(response.message || '创建工单失败')
+      }
+    }
   } catch (error) {
-    console.error('表单验证失败:', error)
+    console.error('提交表单失败:', error)
+    message.error('提交表单失败')
   }
 }
 
@@ -1344,8 +1227,29 @@ const showFeedbackList = (): void => {
 /**
  * 导出工单
  */
-const exportTickets = (): void => {
-  message.success('工单导出成功')
+const exportTickets = async (): Promise<void> => {
+  try {
+    const params: TicketListParams = {
+      keyword: searchForm.ticketId || searchForm.customer || undefined,
+      category: searchForm.category,
+      priority: searchForm.priority,
+      status: searchForm.status,
+      startTime: dayjs(searchForm.dateRange?.[0]).format('YYYY-MM-DD'),
+      endTime: dayjs(searchForm.dateRange?.[1]).format('YYYY-MM-DD'),
+    }
+
+    const response = await exportTicketsApi(params)
+    if (response.code === 200) {
+      message.success('导出成功，文件正在下载...')
+      // 这里可以添加实际的文件下载逻辑
+      window.open(response.data.url, '_blank')
+    } else {
+      message.error(response.message || '导出失败')
+    }
+  } catch (error) {
+    console.error('导出工单失败:', error)
+    message.error('导出工单失败')
+  }
 }
 
 /**
@@ -1359,6 +1263,7 @@ const showSettings = (): void => {
  * 刷新数据
  */
 const refreshData = (): void => {
+  loadOverviewData()
   loadTicketData()
 }
 
@@ -1366,6 +1271,8 @@ const refreshData = (): void => {
  * 组件挂载时加载数据
  */
 onMounted(() => {
+  loadOverviewData()
+  loadAgentList()
   loadTicketData()
 })
 </script>
@@ -1393,7 +1300,7 @@ onMounted(() => {
     font-weight: 600;
     color: #262626;
   }
-  
+
   .page-description {
     margin: 0;
     color: #8c8c8c;
@@ -1403,21 +1310,21 @@ onMounted(() => {
 
 .overview-section {
   margin-bottom: 24px;
-  
+
   .overview-card {
     text-align: center;
-    
+
     :deep(.ant-statistic-title) {
       font-size: 14px;
       color: #8c8c8c;
       margin-bottom: 8px;
     }
-    
+
     :deep(.ant-statistic-content) {
       display: flex;
       align-items: center;
       justify-content: center;
-      
+
       .ant-statistic-content-value {
         font-size: 24px;
         font-weight: 600;
@@ -1432,7 +1339,7 @@ onMounted(() => {
 
 .search-section {
   margin-bottom: 24px;
-  
+
   :deep(.ant-form-item) {
     margin-bottom: 16px;
   }
@@ -1444,23 +1351,23 @@ onMounted(() => {
       font-weight: 600;
       margin-bottom: 4px;
     }
-    
+
     .contact {
       font-size: 12px;
       color: #8c8c8c;
     }
   }
-  
+
   .assignee-info {
     display: flex;
     align-items: center;
     gap: 8px;
-    
+
     .name {
       font-size: 12px;
     }
   }
-  
+
   .unassigned {
     color: #8c8c8c;
     font-style: italic;
@@ -1471,7 +1378,7 @@ onMounted(() => {
   .detail-card {
     margin-bottom: 16px;
   }
-  
+
   .description-content {
     background: #f5f5f5;
     padding: 12px;
@@ -1481,28 +1388,28 @@ onMounted(() => {
     max-height: 200px;
     overflow-y: auto;
   }
-  
+
   .record-item {
     .record-header {
       display: flex;
       align-items: center;
       gap: 12px;
       margin-bottom: 4px;
-      
+
       .action {
         font-weight: 600;
       }
-      
+
       .operator {
         color: #1890ff;
       }
-      
+
       .time {
         color: #8c8c8c;
         font-size: 12px;
       }
     }
-    
+
     .record-content {
       color: #595959;
       font-size: 14px;
@@ -1510,7 +1417,7 @@ onMounted(() => {
       border-left: 2px solid #f0f0f0;
     }
   }
-  
+
   .detail-actions {
     margin-top: 24px;
     padding-top: 16px;
@@ -1524,27 +1431,27 @@ onMounted(() => {
   .customer-service-view {
     padding: 16px;
   }
-  
+
   .page-header {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .overview-section {
     .ant-col {
       margin-bottom: 16px;
     }
   }
-  
+
   .search-section {
     :deep(.ant-form) {
       .ant-form-item {
         display: block;
         width: 100%;
-        
+
         .ant-form-item-control {
           width: 100%;
-          
+
           .ant-input,
           .ant-select,
           .ant-range-picker {

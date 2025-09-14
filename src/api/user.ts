@@ -1,151 +1,189 @@
-/**
- * 用户相关 API 接口
- */
-
-import { apiGet, apiPost, apiPut, apiDelete } from './index'
+import { apiGet, apiPost, apiPut, apiDelete, type ApiResponse } from './index'
 import {
-  mockLogin,
-  mockGetUserInfo,
+  type User,
+  type UserStats,
+  type LoginRecord,
+  type OperationRecord,
+  type UserSearchParams,
+  type CreateUserParams,
+  type UpdateUserParams,
+  type ChangePasswordParams,
+  type BatchOperationParams,
+  UserStatus,
+  Gender,
   mockGetUserList,
-  type UserInfo,
-  type LoginRequest,
-  type LoginResponse,
-  type UserListParams,
+  mockGetUserDetail,
+  mockCreateUser,
+  mockUpdateUser,
+  mockDeleteUser,
+  mockBatchOperateUsers,
+  mockChangeUserPassword,
+  mockGetUserStats,
+  mockGetUserLoginRecords,
+  mockGetUserOperationRecords,
+  mockExportUsers,
+  mockImportUsers,
 } from '@/mock/user'
-import type { ApiResponse, PaginationResponse } from './index'
-
-/**
- * 用户登录
- * @param loginData 登录数据
- * @returns 登录响应
- */
-export const login = (loginData: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
-  return apiPost<LoginResponse>('/auth/login', loginData, mockLogin)
-}
-
-/**
- * 用户登出
- * @returns 登出响应
- */
-export const logout = (): Promise<ApiResponse<null>> => {
-  return apiPost<null>('/auth/logout')
-}
-
-/**
- * 获取当前用户信息
- * @returns 用户信息
- */
-export const getCurrentUserInfo = (): Promise<ApiResponse<UserInfo>> => {
-  return apiGet<UserInfo>('/user/info', undefined, () => {
-    const token = localStorage.getItem('token') || ''
-    return mockGetUserInfo(token)
-  })
-}
 
 /**
  * 获取用户列表
- * @param params 查询参数
- * @returns 用户列表
+ * @param params 搜索参数
+ * @returns 用户列表响应
  */
-export const getUserList = (
-  params?: UserListParams,
-): Promise<ApiResponse<PaginationResponse<UserInfo>>> => {
-  return apiGet<PaginationResponse<UserInfo>>('/user/list', params, mockGetUserList)
+export const getUserList = async (
+  params: UserSearchParams = {},
+): Promise<ApiResponse<{ list: User[]; total: number }>> => {
+  return apiGet<{ list: User[]; total: number }>('/api/users', params as Record<string, unknown>, (args) => mockGetUserList(args as UserSearchParams))
 }
 
 /**
  * 获取用户详情
  * @param userId 用户ID
- * @returns 用户详情
+ * @returns 用户详情响应
  */
-export const getUserDetail = (userId: string): Promise<ApiResponse<UserInfo>> => {
-  return apiGet<UserInfo>(`/user/${userId}`)
+export const getUserDetail = async (userId: string): Promise<ApiResponse<User>> => {
+  return apiGet<User>(`/api/users/${userId}`, {}, (...args) => mockGetUserDetail(userId))
 }
 
 /**
  * 创建用户
- * @param userData 用户数据
- * @returns 创建结果
+ * @param params 创建参数
+ * @returns 创建结果响应
  */
-export const createUser = (userData: Partial<UserInfo>): Promise<ApiResponse<UserInfo>> => {
-  return apiPost<UserInfo>('/user', userData)
+export const createUser = async (params: CreateUserParams): Promise<ApiResponse<User>> => {
+  return apiPost<User>('/api/users', params, (...args) => mockCreateUser(args[0] as CreateUserParams))
 }
 
 /**
- * 更新用户信息
+ * 更新用户
  * @param userId 用户ID
- * @param userData 用户数据
- * @returns 更新结果
+ * @param params 更新参数
+ * @returns 更新结果响应
  */
-export const updateUser = (
+export const updateUser = async (
   userId: string,
-  userData: Partial<UserInfo>,
-): Promise<ApiResponse<UserInfo>> => {
-  return apiPut<UserInfo>(`/user/${userId}`, userData)
+  params: UpdateUserParams,
+): Promise<ApiResponse<User>> => {
+  return apiPut<User>(`/api/users/${userId}`, params, (...args) => mockUpdateUser(userId, args[0] as UpdateUserParams))
 }
 
 /**
  * 删除用户
  * @param userId 用户ID
- * @returns 删除结果
+ * @returns 删除结果响应
  */
-export const deleteUser = (userId: string): Promise<ApiResponse<null>> => {
-  return apiDelete<null>(`/user/${userId}`)
+export const deleteUser = async (userId: string): Promise<ApiResponse<null>> => {
+  return apiDelete<null>(`/api/users/${userId}`, {}, (...args) => mockDeleteUser(userId))
 }
 
 /**
- * 批量删除用户
- * @param userIds 用户ID列表
- * @returns 删除结果
+ * 批量操作用户
+ * @param params 批量操作参数
+ * @returns 操作结果响应
  */
-export const batchDeleteUsers = (userIds: string[]): Promise<ApiResponse<null>> => {
-  return apiDelete<null>('/user/batch', { ids: userIds })
-}
-
-/**
- * 重置用户密码
- * @param userId 用户ID
- * @param newPassword 新密码
- * @returns 重置结果
- */
-export const resetUserPassword = (
-  userId: string,
-  newPassword: string,
+export const batchOperateUsers = async (
+  params: BatchOperationParams,
 ): Promise<ApiResponse<null>> => {
-  return apiPut<null>(`/user/${userId}/password`, { password: newPassword })
+  return apiPost<null>('/api/users/batch', params, (...args) => mockBatchOperateUsers(args[0] as BatchOperationParams))
 }
 
 /**
- * 修改用户状态
- * @param userId 用户ID
- * @param status 用户状态
- * @returns 修改结果
+ * 修改用户密码
+ * @param params 密码修改参数
+ * @returns 修改结果响应
  */
-export const updateUserStatus = (
-  userId: string,
-  status: 'active' | 'inactive' | 'banned',
+export const changeUserPassword = async (
+  params: ChangePasswordParams,
 ): Promise<ApiResponse<null>> => {
-  return apiPut<null>(`/user/${userId}/status`, { status })
+  return apiPut<null>('/api/users/password', params, (...args) => mockChangeUserPassword(args[0] as ChangePasswordParams))
 }
 
 /**
- * 获取用户权限
- * @param userId 用户ID
- * @returns 用户权限
+ * 获取用户统计信息
+ * @returns 统计信息响应
  */
-export const getUserPermissions = (userId: string): Promise<ApiResponse<string[]>> => {
-  return apiGet<string[]>(`/user/${userId}/permissions`)
+export const getUserStats = async (): Promise<ApiResponse<UserStats>> => {
+  return apiGet<UserStats>('/api/users/stats', {}, mockGetUserStats)
 }
 
 /**
- * 更新用户权限
+ * 获取用户登录记录
  * @param userId 用户ID
- * @param permissions 权限列表
- * @returns 更新结果
+ * @param page 页码
+ * @param pageSize 每页数量
+ * @returns 登录记录响应
  */
-export const updateUserPermissions = (
+export const getUserLoginRecords = async (
   userId: string,
-  permissions: string[],
-): Promise<ApiResponse<null>> => {
-  return apiPut<null>(`/user/${userId}/permissions`, { permissions })
+  page = 1,
+  pageSize = 10,
+): Promise<ApiResponse<{ list: LoginRecord[]; total: number }>> => {
+  return apiGet<{ list: LoginRecord[]; total: number }>(
+    `/api/users/${userId}/login-records`,
+    { page, pageSize },
+    (...args) => mockGetUserLoginRecords(userId, page, pageSize),
+  )
 }
+
+/**
+ * 获取用户操作记录
+ * @param userId 用户ID
+ * @param page 页码
+ * @param pageSize 每页数量
+ * @returns 操作记录响应
+ */
+export const getUserOperationRecords = async (
+  userId: string,
+  page = 1,
+  pageSize = 10,
+): Promise<ApiResponse<{ list: OperationRecord[]; total: number }>> => {
+  return apiGet<{ list: OperationRecord[]; total: number }>(
+    `/api/users/${userId}/operation-records`,
+    { page, pageSize },
+    (...args) => mockGetUserOperationRecords(userId, page, pageSize),
+  )
+}
+
+/**
+ * 导出用户数据
+ * @param params 搜索参数
+ * @returns 导出结果响应
+ */
+export const exportUsers = async (
+  params: UserSearchParams = {},
+): Promise<ApiResponse<{ downloadUrl: string }>> => {
+  return apiPost<{ downloadUrl: string }>('/api/users/export', params, (...args) => mockExportUsers(args[0] as UserSearchParams))
+}
+
+/**
+ * 导入用户数据
+ * @param file 文件对象
+ * @returns 导入结果响应
+ */
+export const importUsers = async (
+  file: File,
+): Promise<ApiResponse<{ successCount: number; failCount: number; errors: string[] }>> => {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  return apiPost<{ successCount: number; failCount: number; errors: string[] }>(
+    '/api/users/import',
+    formData,
+    (...args) => mockImportUsers(file),
+  )
+}
+
+// 导出类型
+export type {
+  User,
+  UserStats,
+  LoginRecord,
+  OperationRecord,
+  UserSearchParams,
+  CreateUserParams,
+  UpdateUserParams,
+  ChangePasswordParams,
+  BatchOperationParams,
+}
+
+export { UserStatus, Gender }

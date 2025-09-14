@@ -209,6 +209,8 @@ import {
   ExportOutlined
 } from '@ant-design/icons-vue'
 import type { TableColumnsType, TableProps } from 'ant-design-vue'
+import { getUserList, deleteUser, batchOperateUsers, exportUsers } from '@/api/user'
+import { UserStatus, type User as MockUser, type UserSearchParams } from '@/mock/user'
 
 interface User {
   id: string
@@ -217,7 +219,7 @@ interface User {
   phone?: string
   avatar?: string
   role: string
-  status: 'active' | 'inactive'
+  status: UserStatus
   lastLoginTime: string
   createdAt: string
 }
@@ -225,7 +227,7 @@ interface User {
 interface SearchForm {
   username: string
   email: string
-  status?: 'active' | 'inactive'
+  status?: UserStatus
 }
 
 // 响应式数据
@@ -335,49 +337,32 @@ const formatDate = (dateString: string): string => {
 const loadUserList = async (): Promise<void> => {
   loading.value = true
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const params = {
+      username: searchForm.username || undefined,
+      email: searchForm.email || undefined,
+      status: searchForm.status || undefined,
+      page: pagination.current,
+      pageSize: pagination.pageSize
+    }
     
-    // 模拟数据
-    const mockData: User[] = [
-      {
-        id: '1',
-        username: 'admin',
-        email: 'admin@example.com',
-        phone: '13800138000',
-        avatar: '',
-        role: '超级管理员',
-        status: 'active',
-        lastLoginTime: '2024-01-15 10:30:00',
-        createdAt: '2024-01-01 09:00:00'
-      },
-      {
-        id: '2',
-        username: 'user001',
-        email: 'user001@example.com',
-        phone: '13800138001',
-        avatar: '',
-        role: '普通用户',
-        status: 'active',
-        lastLoginTime: '2024-01-14 15:20:00',
-        createdAt: '2024-01-02 10:00:00'
-      },
-      {
-        id: '3',
-        username: 'user002',
-        email: 'user002@example.com',
-        phone: '13800138002',
-        avatar: '',
-        role: '普通用户',
-        status: 'inactive',
-        lastLoginTime: '2024-01-10 08:45:00',
-        createdAt: '2024-01-03 11:00:00'
-      }
-    ]
-    
-    userList.value = mockData
-    pagination.total = mockData.length
-  } catch (__error) {
+    const response = await getUserList(params)
+    if (response.code === 200) {
+      userList.value = response.data.list.map(item => ({
+        id: item.id,
+        username: item.username,
+        email: item.email,
+        phone: item.phone,
+        avatar: item.avatar,
+        role: item.role,
+        status: item.status,
+        lastLoginTime: item.lastLoginTime || '',
+        createdAt: item.createdAt
+      }))
+      pagination.total = response.data.total
+    } else {
+      message.error(response.message || '加载用户列表失败')
+    }
+  } catch (error) {
     message.error('加载用户列表失败')
   } finally {
     loading.value = false
@@ -415,13 +400,32 @@ const handleAdd = (): void => {
  * 批量删除
  */
 const handleBatchDelete = (): void => {
+  if (selectedRowKeys.value.length === 0) {
+    message.warning('请选择要删除的用户')
+    return
+  }
+  
   Modal.confirm({
-    title: '确认删除',
+    title: '确认批量删除',
     content: `确定要删除选中的 ${selectedRowKeys.value.length} 个用户吗？`,
-    onOk: () => {
-      message.success('删除成功')
-      selectedRowKeys.value = []
-      loadUserList()
+    okText: '确定',
+    cancelText: '取消',
+    onOk: async () => {
+      try {
+        const response = await batchOperateUsers({
+          operation: 'delete',
+          userIds: selectedRowKeys.value
+        })
+        if (response.code === 200) {
+          message.success('批量删除成功')
+          selectedRowKeys.value = []
+          await loadUserList()
+        } else {
+          message.error(response.message || '批量删除失败')
+        }
+      } catch (error) {
+        message.error('批量删除失败')
+      }
     }
   })
 }
@@ -429,8 +433,31 @@ const handleBatchDelete = (): void => {
 /**
  * 导出数据
  */
-const handleExport = (): void => {
-  message.info('导出功能开发中...')
+const handleExport = async (): Promise<void> => {
+  try {
+    const params: UserSearchParams = {
+      username: searchForm.username || undefined,
+      email: searchForm.email || undefined,
+      status: searchForm.status || undefined
+    }
+    
+    const response = await exportUsers(params)
+    if (response.code === 200) {
+      // 直接使用下载链接
+      const link = document.createElement('a')
+      link.href = response.data.downloadUrl
+      link.download = `用户列表_${new Date().toISOString().slice(0, 10)}.xlsx`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+      message.success('导出成功')
+    } else {
+      message.error(response.message || '导出失败')
+    }
+  } catch (error) {
+    message.error('导出失败')
+  }
 }
 
 /**
@@ -455,9 +482,20 @@ const handleDelete = (record: User): void => {
   Modal.confirm({
     title: '确认删除',
     content: `确定要删除用户 "${record.username}" 吗？`,
-    onOk: () => {
-      message.success('删除成功')
-      loadUserList()
+    okText: '确定',
+    cancelText: '取消',
+    onOk: async () => {
+      try {
+        const response = await deleteUser(record.id)
+        if (response.code === 200) {
+          message.success('删除成功')
+          await loadUserList()
+        } else {
+          message.error(response.message || '删除失败')
+        }
+      } catch (error) {
+        message.error('删除失败')
+      }
     }
   })
 }

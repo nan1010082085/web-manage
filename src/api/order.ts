@@ -24,7 +24,11 @@ import type { ApiResponse, PaginationResponse } from './index'
 export const getOrderList = (
   params?: OrderListParams,
 ): Promise<ApiResponse<PaginationResponse<OrderInfo>>> => {
-  return apiGet<PaginationResponse<OrderInfo>>('/order/list', params, mockGetOrderList)
+  return apiGet<PaginationResponse<OrderInfo>>(
+    '/order/list',
+    params as Record<string, unknown>,
+    () => mockGetOrderList(params),
+  )
 }
 
 /**
@@ -173,8 +177,22 @@ export const refundOrder = (
  * @param orderId 订单ID
  * @returns 物流信息
  */
-export const getOrderTracking = (orderId: string): Promise<ApiResponse<any>> => {
-  return apiGet<any>(`/order/${orderId}/tracking`)
+export const getOrderTracking = (
+  orderId: string,
+): Promise<
+  ApiResponse<{
+    trackingNumber: string
+    courier: string
+    status: string
+    timeline: Array<{ time: string; status: string; location: string }>
+  }>
+> => {
+  return apiGet<{
+    trackingNumber: string
+    courier: string
+    status: string
+    timeline: Array<{ time: string; status: string; location: string }>
+  }>(`/order/${orderId}/tracking`)
 }
 
 /**
@@ -182,8 +200,12 @@ export const getOrderTracking = (orderId: string): Promise<ApiResponse<any>> => 
  * @param orderId 订单ID
  * @returns 发票信息
  */
-export const getOrderInvoice = (orderId: string): Promise<ApiResponse<any>> => {
-  return apiGet<any>(`/order/${orderId}/invoice`)
+export const getOrderInvoice = (
+  orderId: string,
+): Promise<ApiResponse<{ invoiceUrl: string; invoiceNumber: string; amount: number }>> => {
+  return apiGet<{ invoiceUrl: string; invoiceNumber: string; amount: number }>(
+    `/order/${orderId}/invoice`,
+  )
 }
 
 /**
@@ -203,8 +225,13 @@ export const exportOrders = (params?: OrderListParams): Promise<ApiResponse<{ ur
 export const getOrderTrends = (dateRange?: {
   startDate: string
   endDate: string
-}): Promise<ApiResponse<any>> => {
-  return apiGet<any>('/order/trends', dateRange)
+}): Promise<
+  ApiResponse<{ trends: Array<{ date: string; orderCount: number; totalAmount: number }> }>
+> => {
+  return apiGet<{ trends: Array<{ date: string; orderCount: number; totalAmount: number }> }>(
+    '/order/trends',
+    dateRange,
+  )
 }
 
 /**
@@ -212,14 +239,26 @@ export const getOrderTrends = (dateRange?: {
  * @param limit 数量限制
  * @returns 热销商品列表
  */
-export const getHotSellingProducts = (limit: number = 10): Promise<ApiResponse<any[]>> => {
-  return apiGet<any[]>('/order/hot-products', { limit })
+export const getHotSellingProducts = (
+  limit: number = 10,
+): Promise<
+  ApiResponse<
+    Array<{ productId: string; productName: string; salesCount: number; revenue: number }>
+  >
+> => {
+  return apiGet<
+    Array<{ productId: string; productName: string; salesCount: number; revenue: number }>
+  >('/order/hot-products', { limit })
 }
 
 /**
  * 获取订单来源统计
  * @returns 来源统计
  */
-export const getOrderSourceStats = (): Promise<ApiResponse<any>> => {
-  return apiGet<any>('/order/source-stats')
+export const getOrderSourceStats = (): Promise<
+  ApiResponse<{ sources: Array<{ source: string; count: number; percentage: number }> }>
+> => {
+  return apiGet<{ sources: Array<{ source: string; count: number; percentage: number }> }>(
+    '/order/source-stats',
+  )
 }

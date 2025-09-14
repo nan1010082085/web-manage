@@ -31,7 +31,7 @@ export const apiConfig: ApiConfig = {
 /**
  * API 响应接口
  */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   code: number
   message: string
   data: T
@@ -63,13 +63,13 @@ export interface ApiRequestConfig {
   /** 请求 URL */
   url: string
   /** 请求参数 */
-  params?: Record<string, any>
-  /** 请求体数据 */
-  data?: any
+  params?: Record<string, unknown>
+  /** 请求数据 */
+  data?: unknown
   /** 请求头 */
   headers?: Record<string, string>
   /** Mock 函数 */
-  mockFn?: (...args: any[]) => Promise<MockResponse<any>>
+  mockFn?: (...args: unknown[]) => Promise<MockResponse<unknown>>
 }
 
 /**
@@ -77,7 +77,7 @@ export interface ApiRequestConfig {
  * @param config 请求配置
  * @returns 响应数据
  */
-export const apiRequest = async <T = any>(config: ApiRequestConfig): Promise<ApiResponse<T>> => {
+export const apiRequest = async <T = unknown>(config: ApiRequestConfig): Promise<ApiResponse<T>> => {
   const { method, url, params, data, headers, mockFn } = config
 
   // 如果启用 Mock 且提供了 Mock 函数
@@ -115,10 +115,10 @@ export const apiRequest = async <T = any>(config: ApiRequestConfig): Promise<Api
  * @param mockFn Mock 函数
  * @returns 响应数据
  */
-export const apiGet = <T = any>(
+export const apiGet = <T = unknown>(
   url: string,
-  params?: Record<string, any>,
-  mockFn?: (...args: any[]) => Promise<MockResponse<any>>,
+  params?: Record<string, unknown>,
+  mockFn?: (...args: unknown[]) => Promise<MockResponse<unknown>>,
 ): Promise<ApiResponse<T>> => {
   return apiRequest<T>({
     method: 'GET',
@@ -135,10 +135,10 @@ export const apiGet = <T = any>(
  * @param mockFn Mock 函数
  * @returns 响应数据
  */
-export const apiPost = <T = any>(
+export const apiPost = <T = unknown>(
   url: string,
-  data?: any,
-  mockFn?: (...args: any[]) => Promise<MockResponse<any>>,
+  data?: unknown,
+  mockFn?: (...args: unknown[]) => Promise<MockResponse<unknown>>,
 ): Promise<ApiResponse<T>> => {
   return apiRequest<T>({
     method: 'POST',
@@ -155,10 +155,10 @@ export const apiPost = <T = any>(
  * @param mockFn Mock 函数
  * @returns 响应数据
  */
-export const apiPut = <T = any>(
+export const apiPut = <T = unknown>(
   url: string,
-  data?: any,
-  mockFn?: (...args: any[]) => Promise<MockResponse<any>>,
+  data?: unknown,
+  mockFn?: (...args: unknown[]) => Promise<MockResponse<unknown>>,
 ): Promise<ApiResponse<T>> => {
   return apiRequest<T>({
     method: 'PUT',
@@ -175,10 +175,10 @@ export const apiPut = <T = any>(
  * @param mockFn Mock 函数
  * @returns 响应数据
  */
-export const apiDelete = <T = any>(
+export const apiDelete = <T = unknown>(
   url: string,
-  params?: Record<string, any>,
-  mockFn?: (...args: any[]) => Promise<MockResponse<any>>,
+  params?: Record<string, unknown>,
+  mockFn?: (...args: unknown[]) => Promise<MockResponse<unknown>>,
 ): Promise<ApiResponse<T>> => {
   return apiRequest<T>({
     method: 'DELETE',
@@ -195,10 +195,10 @@ export const apiDelete = <T = any>(
  * @param mockFn Mock 函数
  * @returns 响应数据
  */
-export const apiPatch = <T = any>(
+export const apiPatch = <T = unknown>(
   url: string,
-  data?: any,
-  mockFn?: (...args: any[]) => Promise<MockResponse<any>>,
+  data?: unknown,
+  mockFn?: (...args: unknown[]) => Promise<MockResponse<unknown>>,
 ): Promise<ApiResponse<T>> => {
   return apiRequest<T>({
     method: 'PATCH',

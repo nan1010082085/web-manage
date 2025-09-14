@@ -778,6 +778,20 @@ import {
   DatabaseOutlined,
 } from '@ant-design/icons-vue'
 import type { MenuInfo } from 'ant-design-vue/es/menu/src/interface'
+import {
+  getSystemSettings,
+  updateBasicSettings,
+  updateSecuritySettings,
+  updateNotificationSettings,
+  updatePaymentSettings,
+  updateStorageSettings,
+  updateEmailSettings,
+  updateBackupSettings,
+  updateApiSettings,
+  testEmailConnection as testEmailConnectionApi,
+  testStorageConnection as testStorageConnectionApi,
+  createBackup as createBackupApi
+} from '@/api/settings'
 
 
 /**
@@ -987,27 +1001,23 @@ const handleMenuClick = (info: MenuInfo): void => {
  */
 const loadSettings = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
+    const response = await getSystemSettings()
     
-    // 加载基础设置
-    Object.assign(basicSettings, {
-      siteName: '商城管理系统',
-      siteDomain: 'https://shop.example.com',
-      siteDescription: '专业的电商管理平台',
-      defaultLanguage: 'zh-CN',
-      timezone: 'Asia/Shanghai',
-      maintenanceMode: false,
-      allowRegistration: true,
-    })
-    
-    // 生成API密钥
-    if (!apiSettings.apiKey) {
-      apiSettings.apiKey = generateRandomKey()
+    if (response.code === 200) {
+      // 加载各种设置
+      Object.assign(basicSettings, response.data.basic)
+      Object.assign(securitySettings, response.data.security)
+      Object.assign(notificationSettings, response.data.notification)
+      Object.assign(emailSettings, response.data.email)
+      Object.assign(storageSettings, response.data.storage)
+      Object.assign(paymentSettings, response.data.payment)
+      Object.assign(apiSettings, response.data.api)
+      Object.assign(backupSettings, response.data.backup)
     }
     
     message.success('设置加载成功')
-  } catch (__error) {
+  } catch (error) {
+    console.error('加载设置失败:', error)
     message.error('设置加载失败')
   }
 }
@@ -1029,11 +1039,10 @@ const generateRandomKey = (): string => {
  */
 const saveBasicSettings = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
+    await updateBasicSettings(basicSettings)
     message.success('基础设置保存成功')
-  } catch (__error) {
+  } catch (error) {
+    console.error('保存基础设置失败:', error)
     message.error('基础设置保存失败')
   }
 }
@@ -1043,11 +1052,10 @@ const saveBasicSettings = async (): Promise<void> => {
  */
 const saveSecuritySettings = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
+    await updateSecuritySettings(securitySettings)
     message.success('安全设置保存成功')
-  } catch (__error) {
+  } catch (error) {
+    console.error('保存安全设置失败:', error)
     message.error('安全设置保存失败')
   }
 }
@@ -1057,11 +1065,10 @@ const saveSecuritySettings = async (): Promise<void> => {
  */
 const saveNotificationSettings = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
+    await updateNotificationSettings(notificationSettings)
     message.success('通知设置保存成功')
-  } catch (__error) {
+  } catch (error) {
+    console.error('保存通知设置失败:', error)
     message.error('通知设置保存失败')
   }
 }
@@ -1071,11 +1078,10 @@ const saveNotificationSettings = async (): Promise<void> => {
  */
 const saveEmailSettings = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
+    await updateEmailSettings(emailSettings)
     message.success('邮件设置保存成功')
-  } catch (__error) {
+  } catch (error) {
+    console.error('保存邮件设置失败:', error)
     message.error('邮件设置保存失败')
   }
 }
@@ -1085,11 +1091,10 @@ const saveEmailSettings = async (): Promise<void> => {
  */
 const testEmailConnection = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
+    await testEmailConnectionApi(emailSettings)
     message.success('邮件连接测试成功')
-  } catch (__error) {
+  } catch (error) {
+    console.error('邮件连接测试失败:', error)
     message.error('邮件连接测试失败')
   }
 }
@@ -1099,11 +1104,10 @@ const testEmailConnection = async (): Promise<void> => {
  */
 const saveStorageSettings = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
+    await updateStorageSettings(storageSettings)
     message.success('存储设置保存成功')
-  } catch (__error) {
+  } catch (error) {
+    console.error('保存存储设置失败:', error)
     message.error('存储设置保存失败')
   }
 }
@@ -1113,11 +1117,10 @@ const saveStorageSettings = async (): Promise<void> => {
  */
 const testStorageConnection = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
+    await testStorageConnectionApi(storageSettings)
     message.success('存储连接测试成功')
-  } catch (__error) {
+  } catch (error) {
+    console.error('存储连接测试失败:', error)
     message.error('存储连接测试失败')
   }
 }
@@ -1127,11 +1130,10 @@ const testStorageConnection = async (): Promise<void> => {
  */
 const savePaymentSettings = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
+    await updatePaymentSettings(paymentSettings)
     message.success('支付设置保存成功')
-  } catch (__error) {
+  } catch (error) {
+    console.error('保存支付设置失败:', error)
     message.error('支付设置保存失败')
   }
 }
@@ -1141,11 +1143,10 @@ const savePaymentSettings = async (): Promise<void> => {
  */
 const saveApiSettings = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
+    await updateApiSettings(apiSettings)
     message.success('API设置保存成功')
-  } catch (__error) {
+  } catch (error) {
+    console.error('保存API设置失败:', error)
     message.error('API设置保存失败')
   }
 }
@@ -1154,8 +1155,19 @@ const saveApiSettings = async (): Promise<void> => {
  * 生成API密钥
  */
 const generateApiKey = (): void => {
-  apiSettings.apiKey = generateRandomKey()
-  message.success('API密钥已重新生成')
+  try {
+    // 生成32位随机API密钥
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    let newKey = ''
+    for (let i = 0; i < 32; i++) {
+      newKey += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    apiSettings.apiKey = newKey
+    message.success('API密钥已重新生成')
+  } catch (error) {
+    console.error('生成API密钥失败:', error)
+    message.error('生成API密钥失败')
+  }
 }
 
 /**
@@ -1163,11 +1175,10 @@ const generateApiKey = (): void => {
  */
 const saveBackupSettings = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
+    await updateBackupSettings(backupSettings)
     message.success('备份设置保存成功')
-  } catch (__error) {
+  } catch (error) {
+    console.error('保存备份设置失败:', error)
     message.error('备份设置保存失败')
   }
 }
@@ -1177,11 +1188,14 @@ const saveBackupSettings = async (): Promise<void> => {
  */
 const createBackupNow = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    message.success('备份创建成功')
-  } catch (__error) {
+    const response = await createBackupApi()
+    if (response.code === 200) {
+      message.success(`备份创建成功，备份ID: ${response.data.backupId}`)
+    } else {
+      message.error('备份创建失败')
+    }
+  } catch (error) {
+    console.error('创建备份失败:', error)
     message.error('备份创建失败')
   }
 }
@@ -1198,20 +1212,20 @@ const refreshSettings = (): void => {
  */
 const saveAllSettings = async (): Promise<void> => {
   try {
-    // 模拟保存所有设置
     await Promise.all([
-      saveBasicSettings(),
-      saveSecuritySettings(),
-      saveNotificationSettings(),
-      saveEmailSettings(),
-      saveStorageSettings(),
-      savePaymentSettings(),
-      saveApiSettings(),
-      saveBackupSettings(),
+      updateBasicSettings(basicSettings),
+      updateSecuritySettings(securitySettings),
+      updateNotificationSettings(notificationSettings),
+      updateEmailSettings(emailSettings),
+      updateStorageSettings(storageSettings),
+      updatePaymentSettings(paymentSettings),
+      updateApiSettings(apiSettings),
+      updateBackupSettings(backupSettings),
     ])
     
     message.success('所有设置保存成功')
-  } catch (__error) {
+  } catch (error) {
+    console.error('保存所有设置失败:', error)
     message.error('设置保存失败')
   }
 }

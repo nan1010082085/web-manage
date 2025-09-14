@@ -6,8 +6,8 @@
         <ChartCard
           v-if="isVisible"
           title="订单状态分布"
-          :options="orderStatusChart.chartOptions.value"
-          :loading="orderStatusChart.loading.value"
+          :options="orderStatusOptions"
+          :loading="orderStatusLoading"
           height="300px"
           @refresh="debouncedLoadOrderStatus"
           @chart-created="onOrderStatusReady"
@@ -21,8 +21,8 @@
         <ChartCard
           v-if="isVisible"
           title="商品销售排行"
-          :options="productRankingChart.chartOptions.value"
-          :loading="productRankingChart.loading.value"
+          :options="productRankingOptions"
+          :loading="productRankingLoading"
           height="350px"
           @refresh="() => debouncedLoadProductRanking({ type: productRankingType })"
           @chart-created="onProductRankingReady"
@@ -47,8 +47,8 @@
         <ChartCard
           v-if="isVisible"
           title="用户活跃度分析"
-          :options="userActivityChart.chartOptions.value"
-          :loading="userActivityChart.loading.value"
+          :options="userActivityOptions"
+          :loading="userActivityLoading"
           height="350px"
           @refresh="() => debouncedLoadUserActivity({ period: userActivityPeriod })"
           @chart-created="onUserActivityReady"
@@ -75,8 +75,8 @@
         <ChartCard
           v-if="isVisible"
           title="地区销售热力图"
-          :options="regionSalesChart.chartOptions.value"
-          :loading="regionSalesChart.loading.value"
+          :options="regionSalesOptions"
+          :loading="regionSalesLoading"
           height="400px"
           @refresh="() => debouncedLoadRegionSales({ metric: regionMetric })"
           @chart-created="onRegionSalesReady"
@@ -148,63 +148,75 @@ const chartCache = useChartDataCache('advanced-charts', {
 const performanceMonitor = useChartPerformanceMonitor()
 
 // 防抖处理的数据加载函数
-const debouncedLoadOrderStatus = chartCache.createDebounced(() => orderStatusChart.loadData(), {
+const debouncedLoadOrderStatus = chartCache.createDebounced(() => loadOrderStatusData(), {
   delay: 300,
 })
 const debouncedLoadProductRanking = chartCache.createDebounced(
-  (params: { type: 'sales' | 'quantity' }) => productRankingChart.loadData(params),
+  (...args: any[]) => loadProductRankingData(args[0] as any),
   { delay: 300 },
 )
 const debouncedLoadUserActivity = chartCache.createDebounced(
-  (params: { period: 'week' | 'month' | 'quarter' }) => userActivityChart.loadData(params),
+  (...args: any[]) => loadUserActivityData(args[0] as any),
   { delay: 300 },
 )
 const debouncedLoadRegionSales = chartCache.createDebounced(
-  (params: { metric: 'sales' | 'orders' }) => regionSalesChart.loadData(params),
+  (...args: any[]) => loadRegionSalesData(args[0]),
   { delay: 300 },
 )
 
 // 图表数据管理（集成缓存）
-const orderStatusChart = useChartData({
-  loader: (params) => chartCache.withCache(getOrderStatusData, params),
+const { data: orderStatusData, loading: orderStatusLoading, chartOptions: orderStatusOptions, loadData: loadOrderStatusData } = useChartData<any[]>({
+  loader: async (params) => {
+    const response = await chartCache.withCache(getOrderStatusData, params)
+    return { data: response.data }
+  },
   configGenerator: performanceMonitor.withPerformanceMonitor((data, baseConfig) =>
     applyResponsiveConfig(createOrderStatusConfig(data, baseConfig)),
   ),
   baseConfig: advancedChartConfigs.orderStatus,
-  initialData: [],
+  initialData: [] as any[],
   errorMessagePrefix: '订单状态数据',
   successMessagePrefix: '订单状态数据',
 })
 
-const productRankingChart = useChartData({
-  loader: (params) => chartCache.withCache(getProductRankingData, params),
+const { data: productRankingData, loading: productRankingLoading, chartOptions: productRankingOptions, loadData: loadProductRankingData } = useChartData<any[]>({
+  loader: async (params) => {
+      const response = await chartCache.withCache(getProductRankingData, params as any)
+      return response
+    },
   configGenerator: performanceMonitor.withPerformanceMonitor((data, baseConfig) =>
-    applyResponsiveConfig(createProductRankingConfig(data, baseConfig)),
+    applyResponsiveConfig(createProductRankingConfig(data as any, baseConfig)),
   ),
   baseConfig: advancedChartConfigs.productRanking,
-  initialData: null,
+  initialData: [] as any[],
   errorMessagePrefix: '商品排行数据',
   successMessagePrefix: '商品排行数据',
 })
 
-const userActivityChart = useChartData({
-  loader: (params) => chartCache.withCache(getUserActivityData, params),
+const { data: userActivityData, loading: userActivityLoading, chartOptions: userActivityOptions, loadData: loadUserActivityData } = useChartData<any>({
+  loader: async (params) => {
+      const response = await chartCache.withCache(getUserActivityData, params as any)
+      return response
+    },
   configGenerator: performanceMonitor.withPerformanceMonitor((data, baseConfig) =>
     applyResponsiveConfig(createUserActivityConfig(data, baseConfig)),
   ),
   baseConfig: advancedChartConfigs.userActivity,
-  initialData: { categories: [], series: [] },
+  initialData: { categories: [], series: [] } as any,
   errorMessagePrefix: '用户活跃度数据',
   successMessagePrefix: '用户活跃度数据',
 })
 
-const regionSalesChart = useChartData({
-  loader: (params) => chartCache.withCache(getRegionSalesData, params),
+const { data: regionSalesData, loading: regionSalesLoading, chartOptions: regionSalesOptions, loadData: loadRegionSalesData } = useChartData<any[], { metric?: 'sales' | 'orders' }>({
+  loader: async (params) => {
+    const response = await chartCache.withCache(getRegionSalesData, params)
+    return { data: response.data }
+  },
   configGenerator: performanceMonitor.withPerformanceMonitor((data, baseConfig) =>
     applyResponsiveConfig(createRegionSalesConfig(data, baseConfig)),
   ),
   baseConfig: advancedChartConfigs.regionSales,
-  initialData: [],
+  initialData: [] as any[],
   errorMessagePrefix: '地区销售数据',
   successMessagePrefix: '地区销售数据',
 })
@@ -276,10 +288,10 @@ const preloadCommonData = async (): Promise<void> => {
 onMounted(async () => {
   // 立即加载当前配置的数据
   await Promise.all([
-    orderStatusChart.loadData(),
-    productRankingChart.loadData({ type: productRankingType.value }),
-    userActivityChart.loadData({ period: userActivityPeriod.value }),
-    regionSalesChart.loadData({ metric: regionMetric.value }),
+    loadOrderStatusData(),
+    loadProductRankingData({ type: productRankingType.value } as any),
+    loadUserActivityData({ period: userActivityPeriod.value } as any),
+    loadRegionSalesData({ metric: regionMetric.value }),
   ])
 
   // 后台预加载其他常用数据

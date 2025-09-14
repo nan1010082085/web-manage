@@ -604,93 +604,22 @@ import type { MenuInfo } from 'ant-design-vue/es/menu/src/interface'
 import type { UploadChangeParam } from 'ant-design-vue'
 import { debounce } from 'lodash-es'
 import dayjs from 'dayjs'
+import type {
+  UserInfo,
+  BasicInfo,
+  PasswordForm,
+  SecuritySettings,
+  LoginDevice,
+  NotificationSettings,
+  AppearanceSettings,
+  PrivacySettings,
+  ActivityItem,
+  ActivityFilter
+} from '@/mock/profile'
 
 /**
  * 个人中心页面
  */
-
-interface UserInfo {
-  id: string
-  name: string
-  nickname: string
-  email: string
-  phone: string
-  avatar: string
-  role: string
-  lastLogin: string
-  createdAt: string
-}
-
-interface BasicInfo {
-  name: string
-  nickname: string
-  email: string
-  phone: string
-  gender: string
-  birthday: any
-  bio: string
-  address: string
-}
-
-interface PasswordForm {
-  currentPassword: string
-  newPassword: string
-  confirmPassword: string
-}
-
-interface SecuritySettings {
-  googleAuth: boolean
-  smsAuth: boolean
-}
-
-interface LoginDevice {
-  id: string
-  name: string
-  type: string
-  location: string
-  lastActive: string
-  current: boolean
-}
-
-interface NotificationSettings {
-  emailSystem: boolean
-  emailOrder: boolean
-  emailMarketing: boolean
-  browserNotification: boolean
-  soundNotification: boolean
-  startTime: any
-  endTime: any
-}
-
-interface AppearanceSettings {
-  theme: string
-  language: string
-  compactMode: boolean
-  sidebarCollapsed: boolean
-}
-
-interface PrivacySettings {
-  showRealName: boolean
-  showEmail: boolean
-  showPhone: boolean
-  recordLoginHistory: boolean
-  recordActivityLog: boolean
-}
-
-interface ActivityItem {
-  id: string
-  type: string
-  title: string
-  description: string
-  ip: string
-  device: string
-  createdAt: string
-}
-
-interface ActivityFilter {
-  type: string
-  dateRange: any[]
-}
 
 interface ActivityPagination {
   current: number
@@ -722,7 +651,7 @@ const basicInfo = reactive<BasicInfo>({
   email: '',
   phone: '',
   gender: '',
-  birthday: null,
+  birthday: '',
   bio: '',
   address: '',
 })
@@ -738,6 +667,9 @@ const passwordForm = reactive<PasswordForm>({
 const securitySettings = reactive<SecuritySettings>({
   googleAuth: false,
   smsAuth: false,
+  emailAuth: true,
+  ipRestriction: false,
+  sessionTimeout: 30,
 })
 
 // 登录设备
@@ -750,8 +682,10 @@ const notificationSettings = reactive<NotificationSettings>({
   emailMarketing: false,
   browserNotification: true,
   soundNotification: true,
-  startTime: null,
-  endTime: null,
+  startTime: '09:00',
+  endTime: '22:00',
+  smsNotification: false,
+  wechatNotification: true,
 })
 
 // 外观设置
@@ -760,6 +694,8 @@ const appearanceSettings = reactive<AppearanceSettings>({
   language: 'zh-CN',
   compactMode: false,
   sidebarCollapsed: false,
+  primaryColor: '#1890ff',
+  fontSize: 'medium',
 })
 
 // 隐私设置
@@ -769,6 +705,8 @@ const privacySettings = reactive<PrivacySettings>({
   showPhone: false,
   recordLoginHistory: true,
   recordActivityLog: true,
+  allowSearch: true,
+  dataExport: true,
 })
 
 // 活动记录
@@ -878,6 +816,9 @@ const loadProfile = async (): Promise<void> => {
         location: '北京市',
         lastActive: '2024-01-15 10:30:00',
         current: true,
+        ip: '192.168.1.100',
+        browser: 'Chrome',
+        os: 'Windows 11',
       },
       {
         id: '2',
@@ -886,12 +827,15 @@ const loadProfile = async (): Promise<void> => {
         location: '上海市',
         lastActive: '2024-01-14 18:20:00',
         current: false,
+        ip: '192.168.1.101',
+        browser: 'Safari',
+        os: 'iOS',
       },
     ]
     
     // 设置通知时间默认值
-    notificationSettings.startTime = dayjs('09:00', 'HH:mm')
-    notificationSettings.endTime = dayjs('22:00', 'HH:mm')
+    notificationSettings.startTime = '09:00'
+    notificationSettings.endTime = '22:00'
     
     message.success('个人资料加载成功')
   } catch (__error) {
@@ -1117,6 +1061,8 @@ const loadActivityLog = async (): Promise<void> => {
         description: '通过用户名密码登录系统',
         ip: '192.168.1.100',
         device: 'Windows PC - Chrome',
+        location: '北京市',
+        status: 'success',
         createdAt: '2024-01-15 10:30:00',
       },
       {
@@ -1126,6 +1072,8 @@ const loadActivityLog = async (): Promise<void> => {
         description: '更新了个人简介和联系方式',
         ip: '192.168.1.100',
         device: 'Windows PC - Chrome',
+        location: '北京市',
+        status: 'success',
         createdAt: '2024-01-15 09:45:00',
       },
       {
@@ -1135,6 +1083,8 @@ const loadActivityLog = async (): Promise<void> => {
         description: '成功修改登录密码',
         ip: '192.168.1.100',
         device: 'Windows PC - Chrome',
+        location: '北京市',
+        status: 'success',
         createdAt: '2024-01-14 16:20:00',
       },
     ]

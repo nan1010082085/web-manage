@@ -117,7 +117,8 @@ import {
   DollarOutlined,
 } from '@ant-design/icons-vue'
 import HighChart from '@/components/common/HighChart.vue'
-import { getSalesTrendData, getOrderStatusData, getRealtimeOverview } from '@/api/charts'
+import { getSalesTrendData, getOrderStatusData } from '@/api/charts'
+import { getOrderData, getProductData, getRealtimeData } from '@/api/analytics'
 import { advancedChartConfigs, dataAnalysisChartConfigs } from '@/config/charts/chartConfigs'
 import type { Options } from 'highcharts'
 import type * as Highcharts from 'highcharts'
@@ -282,10 +283,24 @@ const recentActivities = ref<Activity[]>([
  */
 onMounted(async () => {
   try {
-    // 加载概览数据
-    const overviewResponse = await getRealtimeOverview()
-    if (overviewResponse.code === 200) {
-      Object.assign(stats, overviewResponse.data)
+    // 加载概览数据 - 使用真实API接口
+    const [orderResponse, productResponse, realtimeResponse] = await Promise.all([
+      getOrderData({ current: 1, pageSize: 1 }),
+      getProductData({ current: 1, pageSize: 1 }),
+      getRealtimeData()
+    ])
+
+    // 处理统计数据
+    if (orderResponse.code === 200 && productResponse.code === 200 && realtimeResponse.code === 200) {
+      const orderData = orderResponse.data
+      const productData = productResponse.data
+      const realtimeData = realtimeResponse.data
+
+      // 计算统计指标
+      stats.totalOrders = orderData.total || 0
+      stats.totalProducts = productData.total || 0
+      stats.totalUsers = realtimeData.onlineUsers || 0
+      stats.totalRevenue = (realtimeData.todayRevenue || 0).toLocaleString()
     }
 
     // 加载图表数据

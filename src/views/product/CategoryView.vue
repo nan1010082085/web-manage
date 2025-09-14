@@ -140,7 +140,9 @@
       width="600px"
       @ok="handleSubmit"
       @cancel="handleCancel"
-     ok-text="确定" cancel-text="取消">
+      ok-text="确定"
+      cancel-text="取消"
+    >
       <a-form ref="formRef" :model="formData" :rules="formRules" layout="vertical">
         <a-row :gutter="16">
           <a-col :span="12">
@@ -250,6 +252,13 @@ import {
 } from '@ant-design/icons-vue'
 import type { TableColumnsType, FormInstance, UploadFile } from 'ant-design-vue'
 import { debounce } from 'lodash-es'
+import {
+  getProductCategories,
+  createProductCategory,
+  updateProductCategory,
+  deleteProductCategory,
+  type ProductCategory,
+} from '@/api/product'
 
 // 创建防抖搜索函数
 const createDebouncedSearch = <T extends (...args: any[]) => any>(
@@ -263,23 +272,8 @@ const createDebouncedSearch = <T extends (...args: any[]) => any>(
  * 商品分类管理页面
  */
 
-interface Category {
-  id: string
-  name: string
-  code: string
-  parentId?: string
-  level: number
-  sort: number
-  icon?: string
-  description?: string
-  status: number
-  isHot: boolean
-  showInHome: boolean
-  productCount: number
-  children?: Category[]
-  createTime: string
-  updateTime: string
-}
+// 使用ProductCategory类型别名
+type Category = ProductCategory
 
 interface SearchForm {
   name: string
@@ -437,75 +431,19 @@ const buildTreeData = (data: Category[]): Category[] => {
 const loadCategoryData = async (): Promise<void> => {
   loading.value = true
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    const response = await getProductCategories()
 
-    // 模拟数据
-    categoryData.value = [
-      {
-        id: '1',
-        name: '电子产品',
-        code: 'electronics',
-        level: 1,
-        sort: 1,
-        icon: '',
-        description: '各类电子产品',
-        status: 1,
-        isHot: true,
-        showInHome: true,
-        productCount: 156,
-        createTime: '2024-01-01 10:00:00',
-        updateTime: '2024-01-01 10:00:00',
-        children: [
-          {
-            id: '11',
-            name: '手机通讯',
-            code: 'mobile',
-            parentId: '1',
-            level: 2,
-            sort: 1,
-            status: 1,
-            isHot: true,
-            showInHome: true,
-            productCount: 89,
-            createTime: '2024-01-01 10:00:00',
-            updateTime: '2024-01-01 10:00:00',
-          },
-          {
-            id: '12',
-            name: '电脑办公',
-            code: 'computer',
-            parentId: '1',
-            level: 2,
-            sort: 2,
-            status: 1,
-            isHot: false,
-            showInHome: true,
-            productCount: 67,
-            createTime: '2024-01-01 10:00:00',
-            updateTime: '2024-01-01 10:00:00',
-          },
-        ],
-      },
-      {
-        id: '2',
-        name: '服装鞋帽',
-        code: 'clothing',
-        level: 1,
-        sort: 2,
-        status: 1,
-        isHot: false,
-        showInHome: true,
-        productCount: 234,
-        createTime: '2024-01-01 10:00:00',
-        updateTime: '2024-01-01 10:00:00',
-      },
-    ]
-
-    // 默认展开第一级
-    expandedKeys.value = categoryData.value.map((item) => item.id)
+    if (response.code === 200) {
+      categoryData.value = response.data
+      // 默认展开第一级
+      expandedKeys.value = categoryData.value.map((item: Category) => item.id)
+    } else {
+      message.error(response.message || '加载分类数据失败')
+    }
   } catch (error) {
-    message.error('加载分类数据失败')
+    const errorMessage = error instanceof Error ? error.message : '加载分类数据失败'
+    console.error('加载分类数据失败:', error)
+    message.error(errorMessage)
   } finally {
     loading.value = false
   }
@@ -573,10 +511,20 @@ const handleExpand = (expanded: boolean, record: Category): void => {
  */
 const handleStatusChange = async (record: Category): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    message.success('状态更新成功')
+    const response = await updateProductCategory(record.id, {
+      ...record,
+      status: record.status,
+    })
+
+    if (response.code === 200) {
+      message.success('状态更新成功')
+    } else {
+      // 回滚状态
+      record.status = record.status === 1 ? 0 : 1
+      message.error(response.message || '状态更新失败')
+    }
   } catch (error) {
+    console.error('状态更新失败:', error)
     // 回滚状态
     record.status = record.status === 1 ? 0 : 1
     message.error('状态更新失败')
@@ -586,15 +534,23 @@ const handleStatusChange = async (record: Category): Promise<void> => {
 /**
  * 处理排序变更
  */
-const handleSortChange = createDebouncedSearch(async (): Promise<void> => {
+const handleSortChange = async (record: Category): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    message.success('排序更新成功')
+    const response = await updateProductCategory(record.id, {
+      ...record,
+      sort: record.sort,
+    })
+
+    if (response.code === 200) {
+      message.success('排序更新成功')
+    } else {
+      message.error(response.message || '排序更新失败')
+    }
   } catch (error) {
+    console.error('排序更新失败:', error)
     message.error('排序更新失败')
   }
-}, 500)
+}
 
 /**
  * 处理编辑
@@ -639,11 +595,16 @@ const handleAddChild = (record: Category): void => {
  */
 const handleDelete = async (record: Category): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    message.success('删除成功')
-    loadCategoryData()
+    const response = await deleteProductCategory(record.id)
+
+    if (response.code === 200) {
+      message.success('删除成功')
+      loadCategoryData()
+    } else {
+      message.error(response.message || '删除失败')
+    }
   } catch (error) {
+    console.error('删除失败:', error)
     message.error('删除失败')
   }
 }
@@ -655,14 +616,27 @@ const handleSubmit = async (): Promise<void> => {
   try {
     await formRef.value?.validate()
 
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    let response
+    if (editingCategory.value) {
+      response = await updateProductCategory(editingCategory.value.id, formData)
+    } else {
+      response = await createProductCategory(formData)
+    }
 
-    message.success(editingCategory.value ? '更新成功' : '创建成功')
-    showAddModal.value = false
-    loadCategoryData()
-  } catch (error) {
-    console.error('表单验证失败:', error)
+    if (response.code === 200) {
+      message.success(editingCategory.value ? '更新成功' : '创建成功')
+      showAddModal.value = false
+      loadCategoryData()
+    } else {
+      message.error(response.message || (editingCategory.value ? '更新失败' : '创建失败'))
+    }
+  } catch (error: any) {
+    if (error.errorFields) {
+      message.error('请检查表单输入')
+    } else {
+      console.error('操作失败:', error)
+      message.error(editingCategory.value ? '更新失败' : '创建失败')
+    }
   }
 }
 
@@ -700,15 +674,24 @@ const beforeUpload = (file: File): boolean => {
  */
 const handleIconUpload = async (options: any): Promise<void> => {
   try {
-    // 模拟上传
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    const formDataUpload = new FormData()
+    formDataUpload.append('file', options.file)
 
-    // 模拟返回的图片URL
+    // 这里应该调用真实的文件上传API
+    // const response = await uploadFile(formDataUpload)
+    // if (response.success) {
+    //   formData.icon = response.data.url
+    //   message.success('图标上传成功')
+    // } else {
+    //   message.error(response.message || '图标上传失败')
+    // }
+
+    // 临时使用本地预览，实际项目中应替换为真实上传API
     const imageUrl = URL.createObjectURL(options.file)
     formData.icon = imageUrl
-
-    message.success('图标上传成功')
+    message.success('图标上传成功（本地预览）')
   } catch (error) {
+    console.error('图标上传失败:', error)
     message.error('图标上传失败')
   }
 }

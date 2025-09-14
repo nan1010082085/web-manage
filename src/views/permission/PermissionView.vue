@@ -177,7 +177,7 @@
                       <a-button type="link" size="small" @click="assignPermissions(record)">
                         分配权限
                       </a-button>
-                      <a-popconfirm title="确定要删除这个角色吗？" @confirm="deleteRole(record)">
+                      <a-popconfirm title="确定要删除这个角色吗？" @confirm="deleteRoleHandler(record)">
                         <a-button type="link" size="small" danger> 删除 </a-button>
                       </a-popconfirm>
                     </a-space>
@@ -244,7 +244,7 @@
                           </a-button>
                           <a-popconfirm
                             title="确定要删除这个权限吗？"
-                            @confirm="deletePermission(nodeData)"
+                            @confirm="deletePermissionHandler(nodeData)"
                           >
                             <a-button type="link" size="small" danger> 删除 </a-button>
                           </a-popconfirm>
@@ -605,81 +605,67 @@ import {
 } from '@ant-design/icons-vue'
 import type { TableColumnsType, TableProps, FormInstance } from 'ant-design-vue'
 import { debounce } from 'lodash-es'
+import {
+  getPermissionOverview,
+  getPermissionTree,
+  getRoleList,
+  getUserList,
+  createRole,
+  updateRole,
+  deleteRole,
+  createPermission,
+  updatePermission,
+  deletePermission,
+  assignUserRole,
+} from '@/api/permission'
+import { updateUser, type UpdateUserParams } from '@/api/user'
+import type {
+  PermissionOverview,
+  Role,
+  CreateRoleParams,
+  UpdateRoleParams,
+  Permission,
+  CreatePermissionParams,
+  UpdatePermissionParams,
+  User,
+  AssignUserRoleParams,
+  RoleStatus,
+  PermissionType,
+} from '@/mock/permission'
+import { UserStatus } from '@/mock/user'
 
 /**
  * 权限管理页面
  */
-
-interface PermissionOverview {
-  totalRoles: number
-  totalPermissions: number
-  activeUsers: number
-  todayLogins: number
-}
-
-interface Role {
-  id: string
-  name: string
-  description: string
-  color: string
-  status: string
-  permissions: string[]
-  userCount: number
-  createTime: string
-  updateTime: string
-}
-
-interface Permission {
-  key: string
-  title: string
-  type: string
-  description: string
-  status: string
-  path?: string
-  apiUrl?: string
-  parentId?: string
-  sort: number
-  children?: Permission[]
-}
-
-interface User {
-  id: string
-  username: string
-  email: string
-  avatar?: string
-  status: string
-  roles: Role[]
-  lastLogin?: string
-  createTime: string
-}
-
 interface RoleSearchForm {
   name: string
-  status: string
+  status: RoleStatus | ''
 }
 
 interface UserSearchForm {
   username: string
   role: string
-  status: string
+  status: UserStatus | ''
 }
 
 interface RoleForm {
   name: string
   description: string
   color: string
-  status: string
+  status: RoleStatus
+  permissions: string[]
 }
 
 interface PermissionForm {
+  key?: string
   title: string
-  type: string
+  type: PermissionType | ''
   description: string
   path: string
   apiUrl: string
   parentId: string
   sort: number
-  status: string
+  status: 'active' | 'inactive'
 }
 
 // 响应式数据
@@ -706,6 +692,8 @@ const overview = ref<PermissionOverview>({
   totalPermissions: 0,
   activeUsers: 0,
   todayLogins: 0,
+  totalUsers: 0,
+  onlineUsers: 0,
 })
 
 // 搜索表单
@@ -726,6 +714,7 @@ const roleForm = reactive<RoleForm>({
   description: '',
   color: '#1890ff',
   status: 'active',
+  permissions: [],
 })
 
 // 权限表单
@@ -930,14 +919,11 @@ const getPermissionIcon = (type: string) => {
  */
 const loadOverviewData = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    overview.value = {
-      totalRoles: 8,
-      totalPermissions: 45,
-      activeUsers: 156,
-      todayLogins: 89,
+    const response = await getPermissionOverview()
+    if (response.code === 200) {
+      overview.value = response.data
+    } else {
+      message.error(response.message || '加载概览数据失败')
     }
   } catch (error) {
     message.error('加载概览数据失败')
@@ -950,74 +936,26 @@ const loadOverviewData = async (): Promise<void> => {
 const loadRoleList = async (): Promise<void> => {
   roleLoading.value = true
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 800))
-
-    roleList.value = [
-      {
-        id: 'R001',
-        name: '超级管理员',
-        description: '拥有系统所有权限',
-        color: '#f5222d',
-        status: 'active',
-        permissions: ['user:read', 'user:write', 'role:read', 'role:write', 'permission:read'],
-        userCount: 2,
-        createTime: '2024-01-01 10:00:00',
-        updateTime: '2024-01-15 14:30:00',
-      },
-      {
-        id: 'R002',
-        name: '管理员',
-        description: '拥有大部分管理权限',
-        color: '#1890ff',
-        status: 'active',
-        permissions: ['user:read', 'user:write', 'role:read'],
-        userCount: 5,
-        createTime: '2024-01-02 11:00:00',
-        updateTime: '2024-01-10 16:20:00',
-      },
-      {
-        id: 'R003',
-        name: '运营人员',
-        description: '负责内容和营销管理',
-        color: '#52c41a',
-        status: 'active',
-        permissions: ['content:read', 'content:write', 'marketing:read'],
-        userCount: 12,
-        createTime: '2024-01-03 09:30:00',
-        updateTime: '2024-01-12 10:15:00',
-      },
-      {
-        id: 'R004',
-        name: '客服人员',
-        description: '处理客户服务相关事务',
-        color: '#fa8c16',
-        status: 'active',
-        permissions: ['service:read', 'service:write'],
-        userCount: 8,
-        createTime: '2024-01-04 15:00:00',
-        updateTime: '2024-01-14 11:45:00',
-      },
-      {
-        id: 'R005',
-        name: '普通用户',
-        description: '基础用户权限',
-        color: '#722ed1',
-        status: 'active',
-        permissions: ['dashboard:read'],
-        userCount: 129,
-        createTime: '2024-01-05 13:20:00',
-        updateTime: '2024-01-08 17:30:00',
-      },
-    ]
-
-    rolePagination.total = roleList.value.length
-  } catch (error) {
-    message.error('加载角色列表失败')
-  } finally {
-    roleLoading.value = false
-  }
-}
+    const params = {
+      page: rolePagination.current,
+      pageSize: rolePagination.pageSize,
+      name: roleSearchForm.name,
+      status: roleSearchForm.status || undefined,
+    }
+    
+    const response = await getRoleList(params)
+    if (response.code === 200) {
+      roleList.value = response.data.list
+      rolePagination.total = response.data.total
+    } else {
+       message.error(response.message || '加载角色列表失败')
+     }
+   } catch (error) {
+     message.error('加载角色列表失败')
+   } finally {
+     roleLoading.value = false
+   }
+ }
 
 /**
  * 加载用户列表
@@ -1025,118 +963,21 @@ const loadRoleList = async (): Promise<void> => {
 const loadUserList = async (): Promise<void> => {
   userLoading.value = true
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 800))
-
-    userList.value = [
-      {
-        id: 'U001',
-        username: 'admin',
-        email: 'admin@example.com',
-        avatar: 'https://picsum.photos/40/40?random=1',
-        status: 'active',
-        roles: [
-          {
-            id: 'R001',
-            name: '超级管理员',
-            description: '',
-            color: '#f5222d',
-            status: 'active',
-            permissions: [],
-            userCount: 0,
-            createTime: '',
-            updateTime: '',
-          },
-        ],
-        lastLogin: '2024-01-15 14:30:00',
-        createTime: '2024-01-01 10:00:00',
-      },
-      {
-        id: 'U002',
-        username: 'manager',
-        email: 'manager@example.com',
-        status: 'active',
-        roles: [
-          {
-            id: 'R002',
-            name: '管理员',
-            description: '',
-            color: '#1890ff',
-            status: 'active',
-            permissions: [],
-            userCount: 0,
-            createTime: '',
-            updateTime: '',
-          },
-        ],
-        lastLogin: '2024-01-15 10:20:00',
-        createTime: '2024-01-02 11:00:00',
-      },
-      {
-        id: 'U003',
-        username: 'operator',
-        email: 'operator@example.com',
-        status: 'active',
-        roles: [
-          {
-            id: 'R003',
-            name: '运营人员',
-            description: '',
-            color: '#52c41a',
-            status: 'active',
-            permissions: [],
-            userCount: 0,
-            createTime: '',
-            updateTime: '',
-          },
-        ],
-        lastLogin: '2024-01-14 16:45:00',
-        createTime: '2024-01-03 09:30:00',
-      },
-      {
-        id: 'U004',
-        username: 'service',
-        email: 'service@example.com',
-        status: 'active',
-        roles: [
-          {
-            id: 'R004',
-            name: '客服人员',
-            description: '',
-            color: '#fa8c16',
-            status: 'active',
-            permissions: [],
-            userCount: 0,
-            createTime: '',
-            updateTime: '',
-          },
-        ],
-        lastLogin: '2024-01-15 09:15:00',
-        createTime: '2024-01-04 15:00:00',
-      },
-      {
-        id: 'U005',
-        username: 'user001',
-        email: 'user001@example.com',
-        status: 'inactive',
-        roles: [
-          {
-            id: 'R005',
-            name: '普通用户',
-            description: '',
-            color: '#722ed1',
-            status: 'active',
-            permissions: [],
-            userCount: 0,
-            createTime: '',
-            updateTime: '',
-          },
-        ],
-        createTime: '2024-01-05 13:20:00',
-      },
-    ]
-
-    userPagination.total = userList.value.length
+    const params = {
+      page: userPagination.current,
+      pageSize: userPagination.pageSize,
+      username: userSearchForm.username,
+      role: userSearchForm.role,
+      status: userSearchForm.status ? userSearchForm.status as any : undefined,
+    }
+    
+    const response = await getUserList(params)
+    if (response.code === 200) {
+      userList.value = response.data.list
+      userPagination.total = response.data.total
+    } else {
+      message.error(response.message || '加载用户列表失败')
+    }
   } catch (error) {
     message.error('加载用户列表失败')
   } finally {
@@ -1149,199 +990,26 @@ const loadUserList = async (): Promise<void> => {
  */
 const loadPermissionTree = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    permissionTree.value = [
-      {
-        key: 'dashboard',
-        title: '工作台',
-        type: 'menu',
-        description: '系统工作台页面',
-        status: 'active',
-        sort: 1,
-        children: [
-          {
-            key: 'dashboard:read',
-            title: '查看工作台',
-            type: 'button',
-            description: '查看工作台数据',
-            status: 'active',
-            sort: 1,
-          },
-        ],
-      },
-      {
-        key: 'user',
-        title: '用户管理',
-        type: 'menu',
-        description: '用户信息管理',
-        status: 'active',
-        sort: 2,
-        children: [
-          {
-            key: 'user:read',
-            title: '查看用户',
-            type: 'button',
-            description: '查看用户列表',
-            status: 'active',
-            sort: 1,
-          },
-          {
-            key: 'user:write',
-            title: '编辑用户',
-            type: 'button',
-            description: '新增、编辑、删除用户',
-            status: 'active',
-            sort: 2,
-          },
-        ],
-      },
-      {
-        key: 'role',
-        title: '角色管理',
-        type: 'menu',
-        description: '系统角色管理',
-        status: 'active',
-        sort: 3,
-        children: [
-          {
-            key: 'role:read',
-            title: '查看角色',
-            type: 'button',
-            description: '查看角色列表',
-            status: 'active',
-            sort: 1,
-          },
-          {
-            key: 'role:write',
-            title: '编辑角色',
-            type: 'button',
-            description: '新增、编辑、删除角色',
-            status: 'active',
-            sort: 2,
-          },
-        ],
-      },
-      {
-        key: 'permission',
-        title: '权限管理',
-        type: 'menu',
-        description: '系统权限管理',
-        status: 'active',
-        sort: 4,
-        children: [
-          {
-            key: 'permission:read',
-            title: '查看权限',
-            type: 'button',
-            description: '查看权限列表',
-            status: 'active',
-            sort: 1,
-          },
-          {
-            key: 'permission:write',
-            title: '编辑权限',
-            type: 'button',
-            description: '新增、编辑、删除权限',
-            status: 'active',
-            sort: 2,
-          },
-        ],
-      },
-      {
-        key: 'content',
-        title: '内容管理',
-        type: 'menu',
-        description: '网站内容管理',
-        status: 'active',
-        sort: 5,
-        children: [
-          {
-            key: 'content:read',
-            title: '查看内容',
-            type: 'button',
-            description: '查看内容列表',
-            status: 'active',
-            sort: 1,
-          },
-          {
-            key: 'content:write',
-            title: '编辑内容',
-            type: 'button',
-            description: '新增、编辑、删除内容',
-            status: 'active',
-            sort: 2,
-          },
-        ],
-      },
-      {
-        key: 'marketing',
-        title: '营销管理',
-        type: 'menu',
-        description: '营销活动管理',
-        status: 'active',
-        sort: 6,
-        children: [
-          {
-            key: 'marketing:read',
-            title: '查看营销',
-            type: 'button',
-            description: '查看营销活动',
-            status: 'active',
-            sort: 1,
-          },
-          {
-            key: 'marketing:write',
-            title: '编辑营销',
-            type: 'button',
-            description: '新增、编辑、删除营销活动',
-            status: 'active',
-            sort: 2,
-          },
-        ],
-      },
-      {
-        key: 'service',
-        title: '客服管理',
-        type: 'menu',
-        description: '客户服务管理',
-        status: 'active',
-        sort: 7,
-        children: [
-          {
-            key: 'service:read',
-            title: '查看客服',
-            type: 'button',
-            description: '查看客服工单',
-            status: 'active',
-            sort: 1,
-          },
-          {
-            key: 'service:write',
-            title: '处理客服',
-            type: 'button',
-            description: '处理客服工单',
-            status: 'active',
-            sort: 2,
-          },
-        ],
-      },
-    ]
-
-    // 默认展开所有节点
-    const getAllKeys = (permissions: Permission[]): string[] => {
-      const keys: string[] = []
-      permissions.forEach((permission) => {
-        keys.push(permission.key)
-        if (permission.children) {
-          keys.push(...getAllKeys(permission.children))
-        }
-      })
-      return keys
+    const response = await getPermissionTree()
+    if (response.code === 200) {
+      permissionTree.value = response.data
+      
+      // 默认展开所有节点
+      const getAllKeys = (permissions: Permission[]): string[] => {
+        const keys: string[] = []
+        permissions.forEach((permission) => {
+          keys.push(permission.key)
+          if (permission.children) {
+            keys.push(...getAllKeys(permission.children))
+          }
+        })
+        return keys
+      }
+      
+      expandedKeys.value = getAllKeys(permissionTree.value)
+    } else {
+      message.error(response.message || '加载权限树失败')
     }
-
-    expandedKeys.value = getAllKeys(permissionTree.value)
   } catch (error) {
     message.error('加载权限树失败')
   }
@@ -1414,6 +1082,7 @@ const showCreateRoleModal = (): void => {
     description: '',
     color: '#1890ff',
     status: 'active',
+    permissions: [],
   })
   roleModalVisible.value = true
 }
@@ -1425,13 +1094,23 @@ const handleRoleSubmit = async (): Promise<void> => {
   try {
     await roleFormRef.value?.validate()
 
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    const roleData: CreateRoleParams = {
+      ...roleForm,
+      permissions: roleForm.permissions || []
+    }
 
-    message.success(editingRole.value ? '角色更新成功' : '角色创建成功')
-    roleModalVisible.value = false
-    loadRoleList()
-    loadOverviewData()
+    const response = editingRole.value 
+      ? await updateRole({ id: editingRole.value.id, ...roleData } as UpdateRoleParams)
+      : await createRole(roleData)
+    
+    if (response.code === 200) {
+      message.success(editingRole.value ? '角色更新成功' : '角色创建成功')
+      roleModalVisible.value = false
+      loadRoleList()
+      loadOverviewData()
+    } else {
+      message.error(response.message || (editingRole.value ? '角色更新失败' : '角色创建失败'))
+    }
   } catch (error) {
     console.error('表单验证失败:', error)
   }
@@ -1462,6 +1141,7 @@ const editRole = (role: Role): void => {
     description: role.description,
     color: role.color,
     status: role.status,
+    permissions: role.permissions,
   })
   roleModalVisible.value = true
 }
@@ -1469,14 +1149,16 @@ const editRole = (role: Role): void => {
 /**
  * 删除角色
  */
-const deleteRole = async (role: Role): Promise<void> => {
+const deleteRoleHandler = async (role: Role): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    message.success('角色删除成功')
-    loadRoleList()
-    loadOverviewData()
+    const response = await deleteRole(role.id)
+    if (response.code === 200) {
+      message.success('角色删除成功')
+      loadRoleList()
+      loadOverviewData()
+    } else {
+      message.error(response.message || '角色删除失败')
+    }
   } catch (error) {
     message.error('角色删除失败')
   }
@@ -1487,11 +1169,22 @@ const deleteRole = async (role: Role): Promise<void> => {
  */
 const toggleRoleStatus = async (role: Role): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    message.success(`角色${role.status === 'active' ? '启用' : '禁用'}成功`)
-    loadRoleList()
+    const newStatus = role.status === 'active' ? 'inactive' : 'active'
+    const updateData: UpdateRoleParams = {
+      id: role.id,
+      name: role.name,
+      description: role.description,
+      color: role.color,
+      status: newStatus,
+      permissions: role.permissions
+    }
+    const response = await updateRole(updateData)
+    if (response.code === 200) {
+      message.success(`角色${newStatus === 'active' ? '启用' : '禁用'}成功`)
+      loadRoleList()
+    } else {
+      message.error(response.message || '状态切换失败')
+    }
   } catch (error) {
     message.error('状态切换失败')
   }
@@ -1511,12 +1204,18 @@ const assignPermissions = (role: Role): void => {
  */
 const handlePermissionSubmit = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    message.success('权限分配成功')
-    permissionModalVisible.value = false
-    loadRoleList()
+    const updateData: UpdateRoleParams = {
+      id: currentRole.value!.id,
+      permissions: checkedPermissions.value
+    }
+    const response = await updateRole(updateData)
+    if (response.code === 200) {
+      message.success('权限分配成功')
+      permissionModalVisible.value = false
+      loadRoleList()
+    } else {
+      message.error(response.message || '权限分配失败')
+    }
   } catch (error) {
     message.error('权限分配失败')
   }
@@ -1563,13 +1262,24 @@ const handleCreatePermissionSubmit = async (): Promise<void> => {
   try {
     await permissionFormRef.value?.validate()
 
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    const permissionData = {
+      ...permissionForm,
+      key: permissionForm.key || `perm_${Date.now()}`,
+      type: permissionForm.type as PermissionType
+    }
 
-    message.success(editingPermission.value ? '权限更新成功' : '权限创建成功')
-    createPermissionModalVisible.value = false
-    loadPermissionTree()
-    loadOverviewData()
+    const response = editingPermission.value 
+      ? await updatePermission({ id: editingPermission.value.id, ...permissionData })
+      : await createPermission(permissionData)
+    
+    if (response.code === 200) {
+      message.success(editingPermission.value ? '权限更新成功' : '权限创建成功')
+      createPermissionModalVisible.value = false
+      loadPermissionTree()
+      loadOverviewData()
+    } else {
+      message.error(response.message || (editingPermission.value ? '权限更新失败' : '权限创建失败'))
+    }
   } catch (error) {
     console.error('表单验证失败:', error)
   }
@@ -1622,14 +1332,16 @@ const addChildPermission = (permission: Permission): void => {
 /**
  * 删除权限
  */
-const deletePermission = async (permission: Permission): Promise<void> => {
+const deletePermissionHandler = async (permission: Permission): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    message.success('权限删除成功')
-    loadPermissionTree()
-    loadOverviewData()
+    const response = await deletePermission(permission.id)
+    if (response.code === 200) {
+      message.success('权限删除成功')
+      loadPermissionTree()
+      loadOverviewData()
+    } else {
+      message.error(response.message || '权限删除失败')
+    }
   } catch (error) {
     message.error('权限删除失败')
   }
@@ -1688,12 +1400,18 @@ const assignUserRoles = (user: User): void => {
  */
 const handleUserRoleSubmit = async (): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    message.success('用户角色分配成功')
-    userRoleModalVisible.value = false
-    loadUserList()
+    const params: AssignUserRoleParams = {
+      userId: currentUser.value!.id,
+      roleIds: selectedUserRoles.value
+    }
+    const response = await assignUserRole(params)
+    if (response.code === 200) {
+      message.success('用户角色分配成功')
+      userRoleModalVisible.value = false
+      loadUserList()
+    } else {
+      message.error(response.message || '用户角色分配失败')
+    }
   } catch (error) {
     message.error('用户角色分配失败')
   }
@@ -1720,11 +1438,17 @@ const viewUserPermissions = (user: User): void => {
  */
 const toggleUserStatus = async (user: User): Promise<void> => {
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    message.success(`用户${user.status === 'active' ? '启用' : '禁用'}成功`)
-    loadUserList()
+    const newStatus: UserStatus = user.status === UserStatus.ACTIVE ? UserStatus.INACTIVE : UserStatus.ACTIVE
+    const updateData: UpdateUserParams = {
+      status: newStatus
+    }
+    const response = await updateUser(user.id, updateData)
+    if (response.code === 200) {
+      message.success(`用户${newStatus === UserStatus.ACTIVE ? '启用' : '禁用'}成功`)
+      loadUserList()
+    } else {
+      message.error(response.message || '状态切换失败')
+    }
   } catch (error) {
     message.error('状态切换失败')
   }

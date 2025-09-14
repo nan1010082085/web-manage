@@ -448,6 +448,16 @@ import {
 import type { TableColumnsType, TableProps, UploadFile } from 'ant-design-vue'
 import HighChart from '@/components/common/HighChart.vue'
 import { campaignChartConfigs } from '@/config/charts/chartConfigs'
+import {
+  getCampaignOverview,
+  getCampaignList,
+  getCampaignDetail,
+  createCampaign,
+  updateCampaign,
+  deleteCampaign,
+  toggleCampaign,
+} from '@/api/marketing'
+import type { Campaign } from '@/mock/marketing'
 
 import dayjs, { type Dayjs } from 'dayjs'
 
@@ -462,24 +472,7 @@ interface CampaignOverview {
   conversionRate: number
 }
 
-interface Campaign {
-  id: string
-  name: string
-  description: string
-  type: string
-  status: string
-  startTime: string
-  endTime: string
-  createTime: string
-  participants: number
-  targetParticipants: number
-  conversions: number
-  conversionRate: number
-  usedBudget: number
-  totalBudget: number
-  rules: string
-  image?: string
-}
+
 
 interface SearchForm {
   name: string
@@ -683,111 +676,32 @@ const getStatusColor = (status: string): string => {
 const loadCampaignData = async (): Promise<void> => {
   tableLoading.value = true
   try {
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 800))
-
-    // 模拟概览数据
-    overview.value = {
-      totalCampaigns: 45,
-      activeCampaigns: 12,
-      totalParticipants: 15678,
-      conversionRate: 12.5,
+    // 获取概览数据
+    const overviewResponse = await getCampaignOverview()
+    if (overviewResponse.code === 200) {
+      overview.value = overviewResponse.data
     }
 
-    // 模拟活动数据
-    const mockData: Campaign[] = [
-      {
-        id: 'CAMP001',
-        name: '双11狂欢节',
-        description: '年度最大促销活动，全场商品5折起',
-        type: 'flash_sale',
-        status: 'active',
-        startTime: '2024-11-01 00:00:00',
-        endTime: '2024-11-11 23:59:59',
-        createTime: '2024-10-15 10:30:00',
-        participants: 8567,
-        targetParticipants: 10000,
-        conversions: 1234,
-        conversionRate: 14.4,
-        usedBudget: 45000,
-        totalBudget: 100000,
-        rules: '1. 活动期间全场商品5折起\n2. 每人限购3件\n3. 不与其他优惠同享',
-        image: 'https://via.placeholder.com/100x100',
-      },
-      {
-        id: 'CAMP002',
-        name: '新用户专享优惠券',
-        description: '新注册用户专享100元优惠券',
-        type: 'discount',
-        status: 'active',
-        startTime: '2024-01-01 00:00:00',
-        endTime: '2024-12-31 23:59:59',
-        createTime: '2023-12-20 14:20:00',
-        participants: 2345,
-        targetParticipants: 5000,
-        conversions: 567,
-        conversionRate: 24.2,
-        usedBudget: 23400,
-        totalBudget: 50000,
-        rules: '1. 仅限新注册用户\n2. 注册后7天内有效\n3. 满200元可用',
-      },
-      {
-        id: 'CAMP003',
-        name: '团购秒杀活动',
-        description: '3人成团，享受超低价格',
-        type: 'group_buy',
-        status: 'paused',
-        startTime: '2024-01-10 10:00:00',
-        endTime: '2024-01-20 22:00:00',
-        createTime: '2024-01-05 09:15:00',
-        participants: 1234,
-        targetParticipants: 2000,
-        conversions: 234,
-        conversionRate: 19.0,
-        usedBudget: 12000,
-        totalBudget: 30000,
-        rules: '1. 3人成团享受团购价\n2. 24小时内成团有效\n3. 团长享受额外优惠',
-      },
-      {
-        id: 'CAMP004',
-        name: '幸运大转盘',
-        description: '每日签到抽奖，赢取丰厚奖品',
-        type: 'lottery',
-        status: 'active',
-        startTime: '2024-01-01 00:00:00',
-        endTime: '2024-03-31 23:59:59',
-        createTime: '2023-12-25 16:45:00',
-        participants: 5678,
-        targetParticipants: 8000,
-        conversions: 456,
-        conversionRate: 8.0,
-        usedBudget: 15600,
-        totalBudget: 25000,
-        rules:
-          '1. 每日签到获得1次抽奖机会\n2. 连续签到7天额外获得1次\n3. 奖品包括优惠券、积分、实物',
-      },
-      {
-        id: 'CAMP005',
-        name: '积分兑换专区',
-        description: '使用积分兑换心仪商品',
-        type: 'points',
-        status: 'active',
-        startTime: '2024-01-01 00:00:00',
-        endTime: '2024-12-31 23:59:59',
-        createTime: '2023-12-30 11:20:00',
-        participants: 3456,
-        targetParticipants: 6000,
-        conversions: 789,
-        conversionRate: 22.8,
-        usedBudget: 8900,
-        totalBudget: 20000,
-        rules: '1. 使用积分兑换商品\n2. 积分不可转让\n3. 兑换商品包邮',
-      },
-    ]
+    // 获取活动列表
+    const params = {
+      name: searchForm.name,
+      status: searchForm.status,
+      type: searchForm.type,
+      startDate: searchForm.dateRange?.[0]?.format('YYYY-MM-DD'),
+      endDate: searchForm.dateRange?.[1]?.format('YYYY-MM-DD'),
+      page: pagination.current,
+      pageSize: pagination.pageSize,
+    }
 
-    campaignData.value = mockData
-    pagination.total = mockData.length
+    const response = await getCampaignList(params)
+    if (response.code === 200) {
+      campaignData.value = response.data.list
+      pagination.total = response.data.total
+    } else {
+      message.error(response.message || '加载活动数据失败')
+    }
   } catch (error) {
+    console.error('加载活动数据失败:', error)
     message.error('加载活动数据失败')
   } finally {
     tableLoading.value = false
@@ -879,10 +793,18 @@ const editCampaign = (record: Campaign): void => {
  * 查看详情
  */
 const viewDetail = async (record: Campaign): Promise<void> => {
-  selectedCampaign.value = record
-  detailModalVisible.value = true
-
-  // 图表已通过HighChart组件自动渲染
+  try {
+    const response = await getCampaignDetail(record.id)
+    if (response.code === 200) {
+      selectedCampaign.value = response.data
+      detailModalVisible.value = true
+    } else {
+      message.error(response.message || '获取活动详情失败')
+    }
+  } catch (error) {
+    console.error('获取活动详情失败:', error)
+    message.error('获取活动详情失败')
+  }
 }
 
 /**
@@ -903,7 +825,7 @@ const handleMenuClick = (key: string, record: Campaign): void => {
       endCampaign(record)
       break
     case 'delete':
-      deleteCampaign(record)
+      deleteCampaignAction(record)
       break
   }
 }
@@ -911,50 +833,128 @@ const handleMenuClick = (key: string, record: Campaign): void => {
 /**
  * 复制活动
  */
-const copyCampaign = (record: Campaign): void => {
-  message.success(`已复制活动: ${record.name}`)
-  loadCampaignData()
+const copyCampaign = async (record: Campaign): Promise<void> => {
+  try {
+    const copyParams = {
+      name: `${record.name} - 副本`,
+      type: record.type as 'coupon' | 'points' | 'discount' | 'flash_sale' | 'group_buy' | 'lottery',
+      description: record.description,
+      cover: record.cover,
+      startTime: record.startTime,
+      endTime: record.endTime,
+      budget: record.budget,
+      targetProducts: record.targetProducts,
+      targetAudience: record.targetAudience,
+      rules: record.rules || {},
+      targetParticipants: record.targetParticipants,
+      totalBudget: record.totalBudget,
+    }
+    const response = await createCampaign(copyParams)
+    if (response.code === 200) {
+      message.success(`已复制活动: ${record.name}`)
+      loadCampaignData()
+    } else {
+      message.error(response.message || '复制活动失败')
+    }
+  } catch (error) {
+    console.error('复制活动失败:', error)
+    message.error('复制活动失败')
+  }
 }
 
 /**
  * 暂停活动
  */
-const pauseCampaign = (record: Campaign): void => {
-  message.success(`已暂停活动: ${record.name}`)
-  loadCampaignData()
+const pauseCampaign = async (record: Campaign): Promise<void> => {
+  try {
+    const response = await toggleCampaign(record.id)
+    if (response.code === 200) {
+      message.success(`已暂停活动: ${record.name}`)
+      loadCampaignData()
+    } else {
+      message.error(response.message || '暂停活动失败')
+    }
+  } catch (error) {
+    console.error('暂停活动失败:', error)
+    message.error('暂停活动失败')
+  }
 }
 
 /**
  * 恢复活动
  */
-const resumeCampaign = (record: Campaign): void => {
-  message.success(`已恢复活动: ${record.name}`)
-  loadCampaignData()
+const resumeCampaign = async (record: Campaign): Promise<void> => {
+  try {
+    const response = await toggleCampaign(record.id)
+    if (response.code === 200) {
+      message.success(`已恢复活动: ${record.name}`)
+      loadCampaignData()
+    } else {
+      message.error(response.message || '恢复活动失败')
+    }
+  } catch (error) {
+    console.error('恢复活动失败:', error)
+    message.error('恢复活动失败')
+  }
 }
 
 /**
  * 结束活动
  */
-const endCampaign = (record: Campaign): void => {
-  message.success(`已结束活动: ${record.name}`)
-  loadCampaignData()
+const endCampaign = async (record: Campaign): Promise<void> => {
+  try {
+    const response = await updateCampaign({ id: record.id, name: record.name })
+    if (response.code === 200) {
+      message.success(`已结束活动: ${record.name}`)
+      loadCampaignData()
+    } else {
+      message.error(response.message || '结束活动失败')
+    }
+  } catch (error) {
+    console.error('结束活动失败:', error)
+    message.error('结束活动失败')
+  }
 }
 
 /**
  * 删除活动
  */
-const deleteCampaign = (record: Campaign): void => {
-  message.success(`已删除活动: ${record.name}`)
-  loadCampaignData()
+const deleteCampaignAction = async (record: Campaign): Promise<void> => {
+  try {
+    const response = await deleteCampaign(record.id)
+    if (response.code === 200) {
+      message.success(`已删除活动: ${record.name}`)
+      loadCampaignData()
+    } else {
+      message.error(response.message || '删除活动失败')
+    }
+  } catch (error) {
+    console.error('删除活动失败:', error)
+    message.error('删除活动失败')
+  }
 }
 
 /**
  * 批量删除
  */
-const batchDelete = (): void => {
-  message.success(`已删除 ${selectedRowKeys.value.length} 个活动`)
-  selectedRowKeys.value = []
-  loadCampaignData()
+const batchDelete = async (): Promise<void> => {
+  try {
+    const deletePromises = selectedRowKeys.value.map(id => deleteCampaign(id))
+    const responses = await Promise.all(deletePromises)
+    
+    const successCount = responses.filter(res => res.code === 200).length
+    if (successCount === selectedRowKeys.value.length) {
+      message.success(`已删除 ${successCount} 个活动`)
+    } else {
+      message.warning(`成功删除 ${successCount} 个活动，${selectedRowKeys.value.length - successCount} 个删除失败`)
+    }
+    
+    selectedRowKeys.value = []
+    loadCampaignData()
+  } catch (error) {
+    console.error('批量删除失败:', error)
+    message.error('批量删除失败')
+  }
 }
 
 /**
@@ -964,16 +964,32 @@ const handleSubmit = async (): Promise<void> => {
   try {
     await formRef.value.validate()
 
-    // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    const params = {
+      ...formData,
+      type: formData.type as 'coupon' | 'points' | 'discount' | 'flash_sale' | 'group_buy' | 'lottery',
+      startTime: formData.startTime?.format('YYYY-MM-DD HH:mm:ss') || '',
+      endTime: formData.endTime?.format('YYYY-MM-DD HH:mm:ss') || '',
+      rules: formData.rules ? JSON.parse(formData.rules) : {},
+    }
 
-    const action = editingCampaign.value ? '更新' : '创建'
-    message.success(`${action}活动成功`)
+    let response
+    if (editingCampaign.value) {
+      response = await updateCampaign({ ...params, id: editingCampaign.value.id })
+    } else {
+      response = await createCampaign(params)
+    }
 
-    modalVisible.value = false
-    loadCampaignData()
+    if (response.code === 200) {
+      const action = editingCampaign.value ? '更新' : '创建'
+      message.success(`${action}活动成功`)
+      modalVisible.value = false
+      loadCampaignData()
+    } else {
+      message.error(response.message || '操作失败')
+    }
   } catch (error) {
-    console.error('表单验证失败:', error)
+    console.error('提交表单失败:', error)
+    message.error('提交表单失败')
   }
 }
 

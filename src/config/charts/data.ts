@@ -4,6 +4,7 @@
  */
 
 import type { Options } from 'highcharts'
+import type { EChartsOption } from 'echarts'
 
 /**
  * 图表数据点接口
@@ -15,7 +16,7 @@ export interface ChartDataPoint {
 }
 
 /**
- * 图表系列数据接口
+ * 图表系列接口
  */
 export interface ChartSeries {
   name: string
@@ -36,10 +37,10 @@ export interface ChartConfig {
 }
 
 /**
- * HighCharts配置生成器接口
+ * 图表配置生成器接口
  */
 export interface ChartOptionGenerator {
-  (data: any, options?: any): Options
+  (data: any, options?: any): Options | EChartsOption
 }
 
 /**
@@ -83,7 +84,7 @@ export const createSalesTrendOption: ChartOptionGenerator = (data, options = {})
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: salesData.map((item) => item.date),
+      data: salesData.map((item: any) => item.date),
     },
     yAxis: [
       {
@@ -108,7 +109,7 @@ export const createSalesTrendOption: ChartOptionGenerator = (data, options = {})
         name: '销售额',
         type: 'line',
         yAxisIndex: 0,
-        data: salesData.map((item) => item.revenue),
+        data: salesData.map((item: any) => item.revenue),
         smooth: true,
         itemStyle: {
           color: '#1890ff',
@@ -131,7 +132,7 @@ export const createSalesTrendOption: ChartOptionGenerator = (data, options = {})
         name: '订单数',
         type: 'line',
         yAxisIndex: 1,
-        data: salesData.map((item) => item.orders),
+        data: salesData.map((item: any) => item.orders),
         smooth: true,
         itemStyle: {
           color: '#52c41a',
@@ -163,7 +164,7 @@ export const createOrderStatusOption: ChartOptionGenerator = (data) => {
     legend: {
       orient: 'vertical',
       left: 'left',
-      data: orderData.map((item) => item.label),
+      data: orderData.map((item: any) => item.label),
     },
     series: [
       {
@@ -191,7 +192,7 @@ export const createOrderStatusOption: ChartOptionGenerator = (data) => {
         labelLine: {
           show: false,
         },
-        data: orderData.map((item) => ({
+        data: orderData.map((item: any) => ({
           value: item.count,
           name: item.label,
           itemStyle: {
@@ -236,7 +237,7 @@ export const createProductSalesOption: ChartOptionGenerator = (data) => {
     },
     xAxis: {
       type: 'category',
-      data: productData.map((item) => item.productName),
+      data: productData.map((item: any) => item.productName),
       axisLabel: {
         interval: 0,
         rotate: 45,
@@ -250,7 +251,7 @@ export const createProductSalesOption: ChartOptionGenerator = (data) => {
       {
         name: '销量',
         type: 'bar',
-        data: productData.map((item, index) => ({
+        data: productData.map((item: any, index: number) => ({
           value: item.sales,
           itemStyle: {
             color: {
@@ -371,13 +372,13 @@ export const createRegionSalesOption: ChartOptionGenerator = (data) => {
     tooltip: {
       trigger: 'item',
       formatter: (params: any) => {
-        const data = regionData.find((item) => item.region === params.name)
+        const data = regionData.find((item: any) => item.region === params.name)
         return `${params.name}<br/>销量: ${data?.sales || 0}<br/>销售额: ¥${data?.revenue.toLocaleString() || 0}<br/>增长率: ${data?.growth || 0}%`
       },
     },
     visualMap: {
       min: 0,
-      max: Math.max(...regionData.map((item) => item.sales)),
+      max: Math.max(...regionData.map((item: any) => item.sales)),
       left: 'left',
       top: 'bottom',
       text: ['高', '低'],
@@ -395,7 +396,7 @@ export const createRegionSalesOption: ChartOptionGenerator = (data) => {
         label: {
           show: true,
         },
-        data: regionData.map((item) => ({
+        data: regionData.map((item: any) => ({
           name: item.region,
           value: item.sales,
         })),
@@ -438,7 +439,7 @@ export const createUserActivityOption: ChartOptionGenerator = (data) => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: activityData.map((item) => `${item.hour}:00`),
+      data: activityData.map((item: any) => `${item.hour}:00`),
     },
     yAxis: [
       {
@@ -457,7 +458,7 @@ export const createUserActivityOption: ChartOptionGenerator = (data) => {
         name: '活跃用户',
         type: 'line',
         yAxisIndex: 0,
-        data: activityData.map((item) => item.activeUsers),
+        data: activityData.map((item: any) => item.activeUsers),
         smooth: true,
         itemStyle: {
           color: '#1890ff',
@@ -467,7 +468,7 @@ export const createUserActivityOption: ChartOptionGenerator = (data) => {
         name: '新增用户',
         type: 'line',
         yAxisIndex: 0,
-        data: activityData.map((item) => item.newUsers),
+        data: activityData.map((item: any) => item.newUsers),
         smooth: true,
         itemStyle: {
           color: '#52c41a',
@@ -477,7 +478,7 @@ export const createUserActivityOption: ChartOptionGenerator = (data) => {
         name: '页面浏览量',
         type: 'bar',
         yAxisIndex: 1,
-        data: activityData.map((item) => item.pageViews),
+        data: activityData.map((item: any) => item.pageViews),
         itemStyle: {
           color: 'rgba(250, 173, 20, 0.6)',
         },
@@ -491,7 +492,7 @@ export const createUserActivityOption: ChartOptionGenerator = (data) => {
  * @param data - 热力图数据
  * @returns ECharts配置选项
  */
-const createHeatmapConfig = (data?: any): Options => {
+const createHeatmapConfig = (data?: any): EChartsOption => {
   return {
     title: {
       text: '用户活跃度热力图',
@@ -563,7 +564,7 @@ const createHeatmapConfig = (data?: any): Options => {
  * @param data - 订单状态数据
  * @returns ECharts配置选项
  */
-const createOrderStatusConfig = (data?: any): Options => {
+const createOrderStatusConfig = (data?: any): EChartsOption => {
   return {
     title: {
       text: '订单状态分布',
@@ -601,7 +602,7 @@ const createOrderStatusConfig = (data?: any): Options => {
  * @param data - 商品排行数据
  * @returns ECharts配置选项
  */
-const createProductRankingConfig = (data?: any): Options => {
+const createProductRankingConfig = (data?: any): EChartsOption => {
   return {
     title: {
       text: '商品销售排行',
@@ -637,7 +638,7 @@ const createProductRankingConfig = (data?: any): Options => {
  * @param data - 用户活跃度数据
  * @returns ECharts配置选项
  */
-const createUserActivityConfig = (data?: any): Options => {
+const createUserActivityConfig = (data?: any): EChartsOption => {
   return {
     title: {
       text: '用户活跃度分析',
@@ -673,7 +674,7 @@ const createUserActivityConfig = (data?: any): Options => {
  * @param data - 地区销售数据
  * @returns ECharts配置选项
  */
-const createRegionSalesConfig = (data?: any): Options => {
+const createRegionSalesConfig = (data?: any): EChartsOption => {
   return {
     title: {
       text: '地区销售分布',
@@ -1104,8 +1105,8 @@ export const createAreaChartOption: ChartOptionGenerator = (data) => {
  * @param data - 图表数据
  * @returns ECharts配置选项
  */
-export const getChartOption = (chartType: string, data: any): Options => {
-  const generators: Record<string, (data?: any) => Options> = {
+export const getChartOption = (chartType: string, data: any): Options | EChartsOption => {
+  const generators: Record<string, (data?: any) => Options | EChartsOption> = {
     salesTrend: createSalesTrendOption,
     userGrowth: createUserGrowthOption,
     categoryDistribution: createCategoryDistributionOption,

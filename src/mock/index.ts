@@ -3,6 +3,8 @@
  * 统一管理所有模拟数据
  */
 
+import type { ApiResponse } from '@/api'
+
 /**
  * Mock 数据配置接口
  */
@@ -21,18 +23,13 @@ export interface MockConfig {
 export const mockConfig: MockConfig = {
   enabled: import.meta.env.VITE_USE_MOCK === 'true',
   delay: 300,
-  showLog: import.meta.env.DEV
+  showLog: import.meta.env.DEV,
 }
 
 /**
  * Mock 响应数据接口
  */
-export interface MockResponse<T = any> {
-  code: number
-  message: string
-  data: T
-  timestamp: number
-}
+export type MockResponse<T = unknown> = ApiResponse<T>
 
 /**
  * 创建成功响应
@@ -42,12 +39,12 @@ export interface MockResponse<T = any> {
  */
 export const createSuccessResponse = <T>(
   data: T,
-  message: string = '操作成功'
+  message: string = '操作成功',
 ): MockResponse<T> => ({
   code: 200,
   message,
   data,
-  timestamp: Date.now()
+  timestamp: Date.now(),
 })
 
 /**
@@ -58,12 +55,12 @@ export const createSuccessResponse = <T>(
  */
 export const createErrorResponse = (
   message: string = '操作失败',
-  code: number = 500
+  code: number = 500,
 ): MockResponse<null> => ({
   code,
   message,
   data: null,
-  timestamp: Date.now()
+  timestamp: Date.now(),
 })
 
 /**
@@ -72,7 +69,7 @@ export const createErrorResponse = (
  * @returns Promise
  */
 export const mockDelay = (delay: number = mockConfig.delay): Promise<void> => {
-  return new Promise(resolve => setTimeout(resolve, delay))
+  return new Promise((resolve) => setTimeout(resolve, delay))
 }
 
 /**
@@ -81,7 +78,7 @@ export const mockDelay = (delay: number = mockConfig.delay): Promise<void> => {
  * @param url 请求 URL
  * @param data 响应数据
  */
-export const mockLog = (method: string, url: string, data: any): void => {
+export const mockLog = (method: string, url: string, data: unknown): void => {
   if (mockConfig.showLog) {
     console.group(`🎭 Mock ${method.toUpperCase()} ${url}`)
     console.log('Response:', data)
@@ -97,7 +94,6 @@ export interface PaginationData<T> {
   total: number
   page: number
   pageSize: number
-  totalPages: number
 }
 
 /**
@@ -110,10 +106,9 @@ export interface PaginationData<T> {
 export const createPaginationData = <T>(
   list: T[],
   page: number = 1,
-  pageSize: number = 10
+  pageSize: number = 10,
 ): PaginationData<T> => {
   const total = list.length
-  const totalPages = Math.ceil(total / pageSize)
   const startIndex = (page - 1) * pageSize
   const endIndex = startIndex + pageSize
   const paginatedList = list.slice(startIndex, endIndex)
@@ -123,7 +118,6 @@ export const createPaginationData = <T>(
     total,
     page,
     pageSize,
-    totalPages
   }
 }
 
@@ -154,7 +148,7 @@ export const randomNumber = (min: number, max: number): number => {
  */
 export const randomDate = (
   startDate: Date = new Date(2023, 0, 1),
-  endDate: Date = new Date()
+  endDate: Date = new Date(),
 ): string => {
   const start = startDate.getTime()
   const end = endDate.getTime()

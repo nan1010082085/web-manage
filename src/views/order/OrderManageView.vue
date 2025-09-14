@@ -41,7 +41,7 @@
           <span class="text-gray-500">较昨日</span>
         </div>
       </div>
-      
+
       <div class="card p-6">
         <div class="flex items-center justify-between">
           <div>
@@ -57,7 +57,7 @@
           <span class="text-gray-500">需要处理</span>
         </div>
       </div>
-      
+
       <div class="card p-6">
         <div class="flex items-center justify-between">
           <div>
@@ -73,7 +73,7 @@
           <span class="text-gray-500">较昨日</span>
         </div>
       </div>
-      
+
       <div class="card p-6">
         <div class="flex items-center justify-between">
           <div>
@@ -95,25 +95,25 @@
     <div class="card mb-6">
       <a-form layout="inline" :model="searchForm" @finish="handleSearch">
         <a-form-item label="订单号">
-          <a-input 
-            v-model:value="searchForm.orderNo" 
-            placeholder="请输入订单号" 
+          <a-input
+            v-model:value="searchForm.orderNo"
+            placeholder="请输入订单号"
             allow-clear
             class="w-48"
           />
         </a-form-item>
         <a-form-item label="客户手机">
-          <a-input 
-            v-model:value="searchForm.customerPhone" 
-            placeholder="请输入客户手机号" 
+          <a-input
+            v-model:value="searchForm.customerPhone"
+            placeholder="请输入客户手机号"
             allow-clear
             class="w-48"
           />
         </a-form-item>
         <a-form-item label="订单状态">
-          <a-select 
-            v-model:value="searchForm.status" 
-            placeholder="请选择状态" 
+          <a-select
+            v-model:value="searchForm.status"
+            placeholder="请选择状态"
             allow-clear
             class="w-32"
           >
@@ -127,22 +127,22 @@
           </a-select>
         </a-form-item>
         <a-form-item label="下单时间">
-          <a-range-picker 
-            v-model:value="searchForm.dateRange" 
+          <a-range-picker
+            v-model:value="searchForm.dateRange"
             class="w-64"
           />
         </a-form-item>
         <a-form-item label="金额区间">
           <a-input-group compact class="w-48">
-            <a-input-number 
-              v-model:value="searchForm.minAmount" 
-              placeholder="最低金额" 
+            <a-input-number
+              v-model:value="searchForm.minAmount"
+              placeholder="最低金额"
               :min="0"
               class="w-1/2"
             />
-            <a-input-number 
-              v-model:value="searchForm.maxAmount" 
-              placeholder="最高金额" 
+            <a-input-number
+              v-model:value="searchForm.maxAmount"
+              placeholder="最高金额"
               :min="0"
               class="w-1/2"
             />
@@ -171,16 +171,16 @@
     <div class="card">
       <div class="flex-between mb-4">
         <div class="flex items-center space-x-4">
-          <a-checkbox 
-            v-model:checked="selectAll" 
+          <a-checkbox
+            v-model:checked="selectAll"
             :indeterminate="indeterminate"
             @change="handleSelectAll"
           >
             全选
           </a-checkbox>
-          <a-button 
-            v-if="selectedRowKeys.length > 0" 
-            type="primary" 
+          <a-button
+            v-if="selectedRowKeys.length > 0"
+            type="primary"
             @click="batchExport"
           >
             批量导出 ({{ selectedRowKeys.length }})
@@ -190,10 +190,10 @@
           共 {{ pagination.total }} 条记录
         </div>
       </div>
-      
-      <a-table 
-        :columns="columns" 
-        :data-source="orderList" 
+
+      <a-table
+        :columns="columns"
+        :data-source="orderList"
         :loading="loading"
         :pagination="pagination"
         :row-selection="rowSelection"
@@ -213,7 +213,7 @@
               </div>
             </div>
           </template>
-          
+
           <!-- 客户信息列 -->
           <template v-else-if="column.key === 'customer'">
             <div>
@@ -221,7 +221,7 @@
               <div class="text-sm text-gray-500">{{ record.customerPhone }}</div>
             </div>
           </template>
-          
+
           <!-- 商品信息列 -->
           <template v-else-if="column.key === 'products'">
             <div class="max-w-xs">
@@ -233,7 +233,7 @@
               </div>
             </div>
           </template>
-          
+
           <!-- 金额列 -->
           <template v-else-if="column.key === 'amount'">
             <div class="text-right">
@@ -241,14 +241,14 @@
               <div class="text-sm text-gray-500">{{ getPaymentMethodText(record.paymentMethod) }}</div>
             </div>
           </template>
-          
+
           <!-- 状态列 -->
           <template v-else-if="column.key === 'status'">
             <a-tag :color="getStatusColor(record.status)">
               {{ getStatusText(record.status) }}
             </a-tag>
           </template>
-          
+
           <!-- 操作列 -->
           <template v-else-if="column.key === 'action'">
             <a-space>
@@ -316,7 +316,7 @@
             <a-descriptions-item label="实付金额">¥{{ currentOrder.paidAmount || currentOrder.totalAmount }}</a-descriptions-item>
           </a-descriptions>
         </div>
-        
+
         <!-- 客户信息 -->
         <div class="mb-6">
           <h3 class="text-lg font-medium mb-4">客户信息</h3>
@@ -326,13 +326,13 @@
             <a-descriptions-item label="收货地址" :span="2">{{ currentOrder.shippingAddress }}</a-descriptions-item>
           </a-descriptions>
         </div>
-        
+
         <!-- 商品信息 -->
         <div class="mb-6">
           <h3 class="text-lg font-medium mb-4">商品信息</h3>
-          <a-table 
-            :columns="productColumns" 
-            :data-source="currentOrder.products" 
+          <a-table
+            :columns="productColumns"
+            :data-source="currentOrder.products"
             :pagination="false"
             size="small"
             bordered
@@ -353,7 +353,7 @@
             </template>
           </a-table>
         </div>
-        
+
         <!-- 物流信息 -->
         <div v-if="currentOrder.logistics" class="mb-6">
           <h3 class="text-lg font-medium mb-4">物流信息</h3>
@@ -388,15 +388,15 @@
             <a-select-option value="申通快递">申通快递</a-select-option>
           </a-select>
         </a-form-item>
-        
+
         <a-form-item label="运单号" required>
           <a-input v-model:value="shipForm.trackingNo" placeholder="请输入运单号" />
         </a-form-item>
-        
+
         <a-form-item label="备注">
-          <a-textarea 
-            v-model:value="shipForm.remark" 
-            placeholder="请输入发货备注" 
+          <a-textarea
+            v-model:value="shipForm.remark"
+            placeholder="请输入发货备注"
             :rows="3"
           />
         </a-form-item>
@@ -425,6 +425,14 @@ import {
   PrinterOutlined
 } from '@ant-design/icons-vue'
 import type { TableColumnsType } from 'ant-design-vue'
+import {
+  getOrderList,
+  getOrderStats,
+  shipOrder as shipOrderApi,
+  deliverOrder as deliverOrderApi,
+  cancelOrder as cancelOrderApi,
+  exportOrders as exportOrdersApi
+} from '@/api/order'
 
 /**
  * 订单管理页面
@@ -469,11 +477,25 @@ const shipModalLoading = ref(false)
 
 // 统计数据
 const statistics = reactive({
-  todayOrders: 156,
-  pendingOrders: 23,
-  todaySales: 89650,
-  refundRequests: 5
+  todayOrders: 0,
+  pendingOrders: 0,
+  todaySales: 0,
+  refundRequests: 0
 })
+
+/**
+ * 加载统计数据
+ */
+const loadStatistics = async () => {
+  try {
+    const response = await getOrderStats()
+    if (response.code === 200) {
+      Object.assign(statistics, response.data)
+    }
+  } catch (error) {
+    console.error('加载统计数据失败:', error)
+  }
+}
 
 // 搜索表单
 const searchForm = reactive({
@@ -501,7 +523,7 @@ const pagination = reactive({
   total: 0,
   showSizeChanger: true,
   showQuickJumper: true,
-  showTotal: (total: number, range: [number, number]) => 
+  showTotal: (total: number, range: [number, number]) =>
     `共 ${total} 条记录，当前显示 ${range[0]}-${range[1]} 条`
 })
 
@@ -610,7 +632,7 @@ const rowSelection = {
 const updateSelectAllState = () => {
   const total = orderList.value.length
   const selected = selectedRowKeys.value.length
-  
+
   selectAll.value = selected === total && total > 0
   indeterminate.value = selected > 0 && selected < total
 }
@@ -678,90 +700,59 @@ const getPaymentMethodText = (method: string) => {
 const loadOrderList = async () => {
   loading.value = true
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // 模拟数据
-    const mockData: Order[] = [
-      {
-        id: '1',
-        orderNo: 'ORD202401010001',
-        customerName: '张三',
-        customerPhone: '13800138000',
-        shippingAddress: '北京市朝阳区xxx街道xxx号',
-        products: [
-          {
-            id: '1',
-            name: 'iPhone 15 Pro',
-            image: 'https://via.placeholder.com/40x40?text=iPhone',
-            price: 7999,
-            quantity: 1
-          }
-        ],
-        totalAmount: 7999,
-        paidAmount: 7999,
-        paymentMethod: 'alipay',
-        status: 'shipped',
-        createTime: '2024-01-01 10:30:00',
-        logistics: {
-          company: '顺丰速运',
-          trackingNo: 'SF1234567890',
-          shipTime: '2024-01-01 15:00:00',
-          estimatedDelivery: '2024-01-02 18:00:00'
+    const params = {
+      page: pagination.current,
+      pageSize: pagination.pageSize,
+      orderNo: searchForm.orderNo || undefined,
+      userName: searchForm.customerPhone || undefined,
+      status: searchForm.status || undefined,
+      startDate: searchForm.dateRange?.[0] || undefined,
+      endDate: searchForm.dateRange?.[1] || undefined
+    }
+
+    const response = await getOrderList(params)
+    if (response.code === 200) {
+      orderList.value = response.data.list.map(item => {
+        // 支付方式映射
+        const paymentMethodMap: Record<string, Order['paymentMethod']> = {
+          credit_card: 'bank',
+          bank_transfer: 'bank',
+          alipay: 'alipay',
+          wechat: 'wechat',
+          cash: 'cash'
         }
-      },
-      {
-        id: '2',
-        orderNo: 'ORD202401010002',
-        customerName: '李四',
-        customerPhone: '13900139000',
-        shippingAddress: '上海市浦东新区xxx路xxx号',
-        products: [
-          {
-            id: '2',
-            name: '春季新款连衣裙',
-            image: 'https://via.placeholder.com/40x40?text=Dress',
-            price: 299,
-            quantity: 2
-          },
-          {
-            id: '3',
-            name: 'Vue.js设计与实现',
-            image: 'https://via.placeholder.com/40x40?text=Book',
-            price: 89,
-            quantity: 1
-          }
-        ],
-        totalAmount: 687,
-        paymentMethod: 'wechat',
-        status: 'paid',
-        createTime: '2024-01-01 11:15:00'
-      },
-      {
-        id: '3',
-        orderNo: 'ORD202401010003',
-        customerName: '王五',
-        customerPhone: '13700137000',
-        shippingAddress: '广州市天河区xxx大道xxx号',
-        products: [
-          {
-            id: '1',
-            name: 'iPhone 15 Pro',
-            image: 'https://via.placeholder.com/40x40?text=iPhone',
-            price: 7999,
-            quantity: 1
-          }
-        ],
-        totalAmount: 7999,
-        paymentMethod: 'bank',
-        status: 'pending',
-        createTime: '2024-01-01 12:00:00'
-      }
-    ]
-    
-    orderList.value = mockData
-    pagination.total = mockData.length
-  } catch (__error) {
+
+        return {
+          id: item.id,
+          orderNo: item.orderNo,
+          customerName: item.userName,
+          customerPhone: item.userPhone,
+          shippingAddress: `${item.shippingAddress.province}${item.shippingAddress.city}${item.shippingAddress.district}${item.shippingAddress.address}`,
+          products: item.items.map(orderItem => ({
+            id: orderItem.id,
+            name: orderItem.productName,
+            image: orderItem.productImage,
+            price: orderItem.price,
+            quantity: orderItem.quantity
+          })),
+          totalAmount: item.actualAmount,
+          paidAmount: item.actualAmount,
+          paymentMethod: paymentMethodMap[item.paymentMethod] || 'cash',
+          status: item.status,
+          createTime: item.createdAt,
+          logistics: item.shippedAt ? {
+            company: '顺丰速运',
+            trackingNo: 'SF' + item.id.slice(-8),
+            shipTime: item.shippedAt,
+            estimatedDelivery: item.deliveredAt || ''
+          } : undefined
+        }
+      })
+      pagination.total = response.data.total
+    } else {
+      message.error(response.message || '加载订单列表失败')
+    }
+  } catch (error) {
     message.error('加载订单列表失败')
   } finally {
     loading.value = false
@@ -829,32 +820,34 @@ const handleShipModalOk = async () => {
     message.error('请填写完整的发货信息')
     return
   }
-  
+
   try {
     shipModalLoading.value = true
-    
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     if (currentOrder.value) {
-      currentOrder.value.status = 'shipped'
-      currentOrder.value.logistics = {
-        company: shipForm.company,
-        trackingNo: shipForm.trackingNo,
-        shipTime: new Date().toLocaleString(),
-        estimatedDelivery: new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleString()
-      }
-      
-      // 更新列表中的数据
-      const index = orderList.value.findIndex(order => order.id === currentOrder.value?.id)
-      if (index > -1) {
-        orderList.value[index] = { ...currentOrder.value }
+      const response = await shipOrderApi(currentOrder.value.id, shipForm.trackingNo, shipForm.company)
+      if (response.code === 200) {
+        currentOrder.value.status = 'shipped'
+        currentOrder.value.logistics = {
+          company: shipForm.company,
+          trackingNo: shipForm.trackingNo,
+          shipTime: new Date().toLocaleString(),
+          estimatedDelivery: new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleString()
+        }
+
+        // 更新列表中的数据
+        const index = orderList.value.findIndex(order => order.id === currentOrder.value?.id)
+        if (index > -1) {
+          orderList.value[index] = { ...currentOrder.value }
+        }
+
+        message.success('发货成功')
+        shipModalVisible.value = false
+      } else {
+        message.error(response.message || '发货失败')
       }
     }
-    
-    message.success('发货成功')
-    shipModalVisible.value = false
-  } catch (__error) {
+  } catch (error) {
     message.error('发货失败')
   } finally {
     shipModalLoading.value = false
@@ -867,14 +860,16 @@ const handleShipModalOk = async () => {
 const deliverOrder = async (record: Order) => {
   try {
     loading.value = true
-    
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    record.status = 'delivered'
-    message.success('确认送达成功')
-  } catch (__error) {
-    message.error('操作失败')
+
+    const response = await deliverOrderApi(record.id)
+    if (response.code === 200) {
+      record.status = 'delivered'
+      message.success('确认送达成功')
+    } else {
+      message.error(response.message || '确认送达失败')
+    }
+  } catch (error) {
+    message.error('确认送达失败')
   } finally {
     loading.value = false
   }
@@ -886,14 +881,16 @@ const deliverOrder = async (record: Order) => {
 const cancelOrder = async (record: Order) => {
   try {
     loading.value = true
-    
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    record.status = 'cancelled'
-    message.success('取消订单成功')
-  } catch (__error) {
-    message.error('操作失败')
+
+    const response = await cancelOrderApi(record.id, '用户取消订单')
+    if (response.code === 200) {
+      record.status = 'cancelled'
+      message.success('取消订单成功')
+    } else {
+      message.error(response.message || '取消订单失败')
+    }
+  } catch (error) {
+    message.error('取消订单失败')
   } finally {
     loading.value = false
   }
@@ -941,6 +938,7 @@ const batchExport = () => {
 // 生命周期
 onMounted(() => {
   loadOrderList()
+  loadStatistics()
 })
 </script>
 

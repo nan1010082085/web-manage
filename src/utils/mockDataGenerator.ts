@@ -2,7 +2,7 @@
  * Mock数据生成器接口
  */
 export interface MockDataGenerator {
-  generateData(config: any, params?: any): any
+  generateData(config: Record<string, unknown>, params?: Record<string, unknown>): Record<string, unknown>
 }
 
 /**
